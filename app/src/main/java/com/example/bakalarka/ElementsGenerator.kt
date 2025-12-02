@@ -1,0 +1,84 @@
+package com.example.bakalarka
+
+import android.util.DisplayMetrics
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bakalarka.util.TextSizeProvider
+
+
+@Composable
+fun ButtonGenerator(text: String,   onClick: () -> Unit) {
+    Button(onClick = {onClick()},colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary)){
+        TextGenerator(text, MaterialTheme.colorScheme.onTertiary, "button",false)
+    }
+}
+
+@Composable
+fun TextGenerator(
+    text: String,
+    color: Color,
+    textType: String,
+    bold: Boolean = false
+) {
+    Text(
+        text = text,
+        fontSize = TextSizeProvider.getSize(textType),
+        fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal,
+        color = color
+    )
+}
+
+
+@Composable
+fun OutlinedTextFieldGenerator(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    isPassword: Boolean = false,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    leadingIcon: ImageVector? = null,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        leadingIcon = leadingIcon?.let { icon ->
+            { Icon(imageVector = icon, contentDescription = null) }
+        },
+        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        shape = RoundedCornerShape(50.dp),
+        colors = TextFieldDefaults.colors(
+            focusedTextColor = MaterialTheme.colorScheme.onBackground,
+            unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+            focusedLabelColor = MaterialTheme.colorScheme.onBackground,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onBackground,
+            focusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
+            unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
+            focusedContainerColor = MaterialTheme.colorScheme.background,
+            unfocusedContainerColor = MaterialTheme.colorScheme.background,
+        )
+    )
+}
+
+
+
