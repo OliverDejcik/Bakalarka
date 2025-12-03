@@ -12,6 +12,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -26,8 +27,8 @@ import com.example.bakalarka.util.TextSizeProvider
 
 
 @Composable
-fun ButtonGenerator(text: String,   onClick: () -> Unit) {
-    Button(onClick = {onClick()},colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary)){
+fun ButtonGenerator(text: String,   onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Button(onClick = {onClick()},modifier = modifier,colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary)){
         TextGenerator(text, MaterialTheme.colorScheme.onTertiary, "button",false)
     }
 }
@@ -37,13 +38,15 @@ fun TextGenerator(
     text: String,
     color: Color,
     textType: String,
-    bold: Boolean = false
+    bold: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
     Text(
         text = text,
         fontSize = TextSizeProvider.getSize(textType),
         fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal,
-        color = color
+        color = color,
+        modifier = modifier
     )
 }
 
@@ -56,6 +59,7 @@ fun OutlinedTextFieldGenerator(
     isPassword: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
     leadingIcon: ImageVector? = null,
+    modifier: Modifier = Modifier
 ) {
     OutlinedTextField(
         value = value,
@@ -67,6 +71,7 @@ fun OutlinedTextFieldGenerator(
         visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         shape = RoundedCornerShape(50.dp),
+        modifier = modifier,
         colors = TextFieldDefaults.colors(
             focusedTextColor = MaterialTheme.colorScheme.onBackground,
             unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
