@@ -20,11 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import com.example.bakalarka.PrimaryButtonGenerator
-import com.example.bakalarka.OutlinedTextFieldGenerator
-import com.example.bakalarka.SecondaryButtonGenerator
-import com.example.bakalarka.TextGenerator
-import com.example.bakalarka.util.TextSizeProvider
+import com.example.bakalarka.other_classes.PrimaryButtonGenerator
+import com.example.bakalarka.other_classes.OutlinedTextFieldGenerator
+import com.example.bakalarka.other_classes.SecondaryButtonGenerator
+import com.example.bakalarka.other_classes.TextGenerator
+import com.example.bakalarka.other_classes.ElementSizeProvider
 
 @Composable
 fun AddTrainingScreen() {
@@ -38,7 +38,7 @@ fun AddTrainingScreen() {
         verticalArrangement = Arrangement.Center
 
     ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(bottom = (10.dp * TextSizeProvider.getScale())), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(modifier = Modifier.fillMaxWidth().padding(bottom = (10.dp * ElementSizeProvider.getScale())), horizontalAlignment = Alignment.CenterHorizontally) {
             TextGenerator("Add Training", MaterialTheme.colorScheme.onBackground, "title")
 
             OutlinedTextFieldGenerator(trainingName,{trainingName = it},"Training Name")

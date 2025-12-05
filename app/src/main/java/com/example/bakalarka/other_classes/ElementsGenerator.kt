@@ -1,4 +1,4 @@
-package com.example.bakalarka
+package com.example.bakalarka.other_classes
 
 import android.util.DisplayMetrics
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.bakalarka.util.TextSizeProvider
+import com.example.bakalarka.other_classes.ElementSizeProvider
 
 
 @Composable
@@ -50,7 +50,7 @@ fun TextGenerator(
 ) {
     Text(
         text = text,
-        fontSize = TextSizeProvider.getSize(textType),
+        fontSize = ElementSizeProvider.getSize(textType),
         fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal,
         color = color,
         modifier = modifier
@@ -91,6 +91,3 @@ fun OutlinedTextFieldGenerator(
         )
     )
 }
-
-
-

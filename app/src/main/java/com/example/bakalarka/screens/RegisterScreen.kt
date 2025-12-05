@@ -27,9 +27,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.bakalarka.OutlinedTextFieldGenerator
-import com.example.bakalarka.PrimaryButtonGenerator
-import com.example.bakalarka.Screens
+import com.example.bakalarka.other_classes.OutlinedTextFieldGenerator
+import com.example.bakalarka.other_classes.PrimaryButtonGenerator
+import com.example.bakalarka.other_classes.Screens
 
 @Composable
 fun RegisterScreen(navController: NavHostController) {

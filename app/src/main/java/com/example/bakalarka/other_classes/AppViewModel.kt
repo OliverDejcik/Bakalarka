@@ -1,4 +1,4 @@
-package com.example.bakalarka
+package com.example.bakalarka.other_classes
 
 import android.content.res.Resources
 import androidx.lifecycle.ViewModel

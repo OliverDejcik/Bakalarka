@@ -1,11 +1,11 @@
-package com.example.bakalarka.util
+package com.example.bakalarka.other_classes
 
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
-import com.example.bakalarka.AppViewModel
+import com.example.bakalarka.other_classes.AppViewModel
 
 
-object TextSizeProvider {
+object ElementSizeProvider {
 
     val viewModel = AppViewModel()
 

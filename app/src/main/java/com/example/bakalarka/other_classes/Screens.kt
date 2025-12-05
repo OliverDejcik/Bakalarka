@@ -1,4 +1,4 @@
-package com.example.bakalarka
+package com.example.bakalarka.other_classes
 
 
 sealed class Screens(val route: String) {

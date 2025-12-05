@@ -27,10 +27,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.bakalarka.OutlinedTextFieldGenerator
-import com.example.bakalarka.PrimaryButtonGenerator
-import com.example.bakalarka.Screens
-import com.example.bakalarka.TextGenerator
+import com.example.bakalarka.other_classes.OutlinedTextFieldGenerator
+import com.example.bakalarka.other_classes.PrimaryButtonGenerator
+import com.example.bakalarka.other_classes.Screens
+import com.example.bakalarka.other_classes.TextGenerator
 
 @Composable
 fun LoginScreen(navController: NavHostController) {

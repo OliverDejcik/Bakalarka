@@ -33,6 +33,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.bakalarka.other_classes.AppViewModel
+import com.example.bakalarka.other_classes.Screens
+import com.example.bakalarka.screens.AddTrainingScreen
+import com.example.bakalarka.screens.HomeScreen
+import com.example.bakalarka.screens.LoginScreen
+import com.example.bakalarka.screens.MainScreen
+import com.example.bakalarka.screens.ProfileScreen
+import com.example.bakalarka.screens.RegisterScreen
+import com.example.bakalarka.screens.SettingsScreen
+import com.example.bakalarka.screens.StatisticsScreen
+import com.example.bakalarka.screens.TrainingScreen
 import com.example.bakalarka.ui.theme.BakalarkaTheme
 
 
