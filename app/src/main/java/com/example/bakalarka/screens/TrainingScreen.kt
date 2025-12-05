@@ -1,4 +1,4 @@
-package com.example.bakalarka
+package com.example.bakalarka.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

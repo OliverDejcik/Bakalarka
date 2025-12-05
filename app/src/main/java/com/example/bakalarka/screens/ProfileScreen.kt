@@ -1,4 +1,4 @@
-package com.example.bakalarka
+package com.example.bakalarka.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,22 +13,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun HomeScreen() {
+fun ProfileScreen() {
     Column(verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.background(MaterialTheme.colorScheme.background).fillMaxSize()
     )
     {
-        Text(text = "Home Screen", fontSize = 30.sp,color = MaterialTheme.colorScheme.onBackground)
-        ButtonGenerator(text = "Register", onClick = {})
-        ButtonGenerator(text = "Register", onClick = {})
-        ButtonGenerator(text = "Register", onClick = {})
+        Text(text = "Profile Screen", fontSize = 30.sp,color = MaterialTheme.colorScheme.onBackground)
     }
 }
 
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
-fun HomeScreenPreview() {
-    HomeScreen()
+fun ProfileScreenPreview() {
+    ProfileScreen()
 }
-

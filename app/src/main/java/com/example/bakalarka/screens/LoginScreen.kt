@@ -1,4 +1,4 @@
-package com.example.bakalarka
+package com.example.bakalarka.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +27,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.bakalarka.OutlinedTextFieldGenerator
+import com.example.bakalarka.PrimaryButtonGenerator
+import com.example.bakalarka.Screens
+import com.example.bakalarka.TextGenerator
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
@@ -63,8 +67,6 @@ fun LoginScreen(navController: NavHostController) {
             leadingIcon = Icons.Default.Lock
         )
 
-        ButtonGenerator(text = "Login", onClick = {navController.navigate(Screens.Home.route) { launchSingleTop = true }})
+        PrimaryButtonGenerator(text = "Login", onClick = {navController.navigate(Screens.Home.route) { launchSingleTop = true }})
     }
 }
-
-

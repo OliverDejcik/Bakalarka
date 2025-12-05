@@ -1,4 +1,4 @@
-package com.example.bakalarka
+package com.example.bakalarka.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +27,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.bakalarka.OutlinedTextFieldGenerator
+import com.example.bakalarka.PrimaryButtonGenerator
+import com.example.bakalarka.Screens
 
 @Composable
 fun RegisterScreen(navController: NavHostController) {
@@ -75,8 +78,6 @@ fun RegisterScreen(navController: NavHostController) {
 
 
 
-        ButtonGenerator(text = "Register", onClick = {navController.navigate(Screens.Login.route) { launchSingleTop = true }})
+        PrimaryButtonGenerator(text = "Register", onClick = {navController.navigate(Screens.Login.route) { launchSingleTop = true }})
     }
 }
-
-

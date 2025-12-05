@@ -27,9 +27,16 @@ import com.example.bakalarka.util.TextSizeProvider
 
 
 @Composable
-fun ButtonGenerator(text: String,   onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Button(onClick = {onClick()},modifier = modifier,colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary)){
+fun PrimaryButtonGenerator(text: String,   onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Button(onClick = {onClick()},modifier = modifier,colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary), shape = RoundedCornerShape(35)){
         TextGenerator(text, MaterialTheme.colorScheme.onTertiary, "button",false)
+    }
+}
+
+@Composable
+fun SecondaryButtonGenerator(text: String,   onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Button(onClick = {onClick()},modifier = modifier,colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary), shape = RoundedCornerShape(35)){
+        TextGenerator(text, MaterialTheme.colorScheme.onSecondary, "label",false)
     }
 }
 
@@ -70,7 +77,7 @@ fun OutlinedTextFieldGenerator(
         },
         visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        shape = RoundedCornerShape(50.dp),
+        shape = RoundedCornerShape(25),
         modifier = modifier,
         colors = TextFieldDefaults.colors(
             focusedTextColor = MaterialTheme.colorScheme.onBackground,

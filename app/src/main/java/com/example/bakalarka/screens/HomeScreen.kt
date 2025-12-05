@@ -1,4 +1,4 @@
-package com.example.bakalarka
+package com.example.bakalarka.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,21 +11,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import com.example.bakalarka.PrimaryButtonGenerator
 
 @Composable
-fun StatisticsScreen() {
+fun HomeScreen() {
     Column(verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.background(MaterialTheme.colorScheme.background).fillMaxSize()
     )
     {
-        Text(text = "Statistics Screen", fontSize = 30.sp,color = MaterialTheme.colorScheme.onBackground)
+        Text(text = "Home Screen", fontSize = 30.sp,color = MaterialTheme.colorScheme.onBackground)
+        PrimaryButtonGenerator(text = "Register", onClick = {})
+        PrimaryButtonGenerator(text = "Register", onClick = {})
+        PrimaryButtonGenerator(text = "Register", onClick = {})
     }
 }
 
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
-fun StatisticsScreenPreview() {
-    StatisticsScreen()
+fun HomeScreenPreview() {
+    HomeScreen()
 }
 

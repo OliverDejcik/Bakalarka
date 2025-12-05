@@ -1,4 +1,4 @@
-package com.example.bakalarka
+package com.example.bakalarka.screens
 
 import android.provider.Settings
 import androidx.compose.foundation.background

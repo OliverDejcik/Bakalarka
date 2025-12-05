@@ -1,4 +1,4 @@
-package com.example.bakalarka
+package com.example.bakalarka.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.bakalarka.PrimaryButtonGenerator
+import com.example.bakalarka.Screens
+import com.example.bakalarka.TextGenerator
 
 @Composable
 fun MainScreen(navController: NavHostController) {
@@ -23,13 +26,10 @@ fun MainScreen(navController: NavHostController) {
     {
         TextGenerator("Main Screen", MaterialTheme.colorScheme.onBackground, "title")
 
-        ButtonGenerator(text = "Login", onClick = {navController.navigate(Screens.Login.route) { launchSingleTop = true }})
+        PrimaryButtonGenerator(text = "Login", onClick = {navController.navigate(Screens.Login.route) { launchSingleTop = true }})
 
-        ButtonGenerator(text = "Register", onClick = {navController.navigate(Screens.Register.route) { launchSingleTop = true }})
+        PrimaryButtonGenerator(text = "Register", onClick = {navController.navigate(Screens.Register.route) { launchSingleTop = true }})
 
 
     }
 }
-
-
-
