@@ -20,11 +20,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.navigation.compose.rememberNavController
+import com.example.bakalarka.Bakalarka
 import com.example.bakalarka.other_classes.PrimaryButtonGenerator
 import com.example.bakalarka.other_classes.OutlinedTextFieldGenerator
 import com.example.bakalarka.other_classes.SecondaryButtonGenerator
 import com.example.bakalarka.other_classes.TextGenerator
 import com.example.bakalarka.other_classes.ElementSizeProvider
+import com.example.bakalarka.ui.theme.BakalarkaTheme
 
 @Composable
 fun AddTrainingScreen() {
@@ -83,5 +86,8 @@ fun AddTrainingScreen() {
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
 fun AddTrainingPreview() {
-    AddTrainingScreen()
+    BakalarkaTheme(darkTheme = true, dynamicColor = false) {
+        Bakalarka(navController = rememberNavController())
+        AddTrainingScreen()
+    }
 }

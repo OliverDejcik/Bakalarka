@@ -24,12 +24,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.bakalarka.other_classes.OutlinedTextFieldGenerator
 import com.example.bakalarka.other_classes.PrimaryButtonGenerator
 import com.example.bakalarka.other_classes.Screens
+import com.example.bakalarka.ui.theme.BakalarkaTheme
 
 @Composable
 fun RegisterScreen(navController: NavHostController) {
@@ -79,5 +82,13 @@ fun RegisterScreen(navController: NavHostController) {
 
 
         PrimaryButtonGenerator(text = "Register", onClick = {navController.navigate(Screens.Login.route) { launchSingleTop = true }})
+    }
+}
+
+@Preview(showSystemUi = true, showBackground = true)
+@Composable
+fun RegisterScreenPreview() {
+    BakalarkaTheme(darkTheme = true, dynamicColor = false) {
+        RegisterScreen(navController = rememberNavController())
     }
 }

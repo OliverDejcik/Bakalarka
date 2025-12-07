@@ -41,7 +41,7 @@ import com.example.bakalarka.screens.LoginScreen
 import com.example.bakalarka.screens.MainScreen
 import com.example.bakalarka.screens.ProfileScreen
 import com.example.bakalarka.screens.RegisterScreen
-import com.example.bakalarka.screens.SettingsScreen
+import com.example.bakalarka.screens.SettingScreen
 import com.example.bakalarka.screens.StatisticsScreen
 import com.example.bakalarka.screens.TrainingScreen
 import com.example.bakalarka.ui.theme.BakalarkaTheme
@@ -214,7 +214,7 @@ fun NavGraph(navController: NavHostController) {
         composable(Screens.AddTraining.route) { AddTrainingScreen() }
         composable(Screens.Statistics.route) { StatisticsScreen() }
         composable(Screens.Profile.route) { ProfileScreen() }
-        composable(Screens.Settings.route) { SettingsScreen() }
+        composable(Screens.Settings.route) { SettingScreen() }
     }
 }
 

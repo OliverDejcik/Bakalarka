@@ -13,9 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.bakalarka.other_classes.PrimaryButtonGenerator
 import com.example.bakalarka.other_classes.Screens
 import com.example.bakalarka.other_classes.TextGenerator
+import com.example.bakalarka.ui.theme.BakalarkaTheme
 
 @Composable
 fun MainScreen(navController: NavHostController) {
@@ -31,5 +33,13 @@ fun MainScreen(navController: NavHostController) {
         PrimaryButtonGenerator(text = "Register", onClick = {navController.navigate(Screens.Register.route) { launchSingleTop = true }})
 
 
+    }
+}
+
+@Preview(showSystemUi = true, showBackground = true)
+@Composable
+fun MainScreenPreview() {
+    BakalarkaTheme(darkTheme = true, dynamicColor = false) {
+        MainScreen(navController = rememberNavController())
     }
 }
