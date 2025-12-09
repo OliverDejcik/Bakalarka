@@ -79,14 +79,14 @@ fun LoginScreen(navController: NavHostController) {
             PrimaryButtonGenerator(text = "Login", onClick = {navController.navigate(Screens.Home.route) { launchSingleTop = true }})
         }
 
-        Row(horizontalArrangement = Arrangement.Center){
-            Box(modifier = Modifier.fillMaxWidth().weight(1f),
+        Row(horizontalArrangement = Arrangement.Center,verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()){
+            Box(modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.Center
             ) {
-                TextGenerator("Don't have an account?", MaterialTheme.colorScheme.onBackground, "label")
+                TextGenerator("No account?", MaterialTheme.colorScheme.onBackground, "label")
             }
 
-            Box(modifier = Modifier.fillMaxWidth().weight(1f),
+            Box(modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.Center
             ) {
                 SecondaryButtonGenerator(text = "Register", onClick = {navController.navigate(Screens.Register.route) { launchSingleTop = true }})

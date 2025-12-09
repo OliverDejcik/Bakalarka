@@ -65,8 +65,8 @@ fun AddTrainingScreen() {
         if (isFormVisible) {
             Column(modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = (10.dp * ElementSizeProvider.getScale())), horizontalAlignment = Alignment.CenterHorizontally) {
-                TextGenerator("Add Training", MaterialTheme.colorScheme.onBackground, "title")
+                .padding(bottom = (15.dp * ElementSizeProvider.getScale())), horizontalAlignment = Alignment.CenterHorizontally) {
+                TextGenerator("Create new training", MaterialTheme.colorScheme.onBackground, "title")
 
                 OutlinedTextFieldGenerator(trainingName,{trainingName = it},"Training Name")
                 OutlinedTextFieldGenerator(trainingNumber,{trainingNumber = it},"Number of exercises",false, KeyboardType.Number)
@@ -88,8 +88,8 @@ fun AddTrainingScreen() {
         }else if(isExerciseFormVisible) {
             Column(modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = (10.dp * ElementSizeProvider.getScale())), horizontalAlignment = Alignment.CenterHorizontally) {
-                TextGenerator("Add Training", MaterialTheme.colorScheme.onBackground, "title")
+                .padding(bottom = (15.dp * ElementSizeProvider.getScale())), horizontalAlignment = Alignment.CenterHorizontally) {
+                TextGenerator("Add Excercise", MaterialTheme.colorScheme.onBackground, "title")
 
                 OutlinedTextFieldGenerator(exercise,{exercise = it},"Name of "+(currentExerciseIndex)+". exercise exercise")
                 OutlinedTextFieldGenerator(sets,{sets = it},"Number of sets",false, KeyboardType.Number)

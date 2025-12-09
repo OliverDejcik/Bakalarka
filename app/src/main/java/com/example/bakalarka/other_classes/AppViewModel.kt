@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 
 // Data class to represent an exercise with a name and details.
 data class Exercise(val name: String, val details: String)
+data class Training(val name: String,val exerciseNum: Int)
+
 
 class AppViewModel : ViewModel() {
 
@@ -51,8 +53,24 @@ class AppViewModel : ViewModel() {
     fun getScreenHeightPX(): Int {
         return Resources.getSystem().displayMetrics.heightPixels
     }
-
-
     fun pxToDp(px: Int): Float = px / density
+
+    // training screen veci
+    var trainingNames = mutableListOf<Training>()
+        private set
+
+    fun addTraining(name: String, exerciseNum: Int) {
+        trainingNames.add(Training(name, exerciseNum.toInt()))
+    }
+
+    fun getTrainings(): List<Training> {
+        return trainingNames
+    }
+
+    fun getTrainingExerciseNum(name: String): Int? {
+        return trainingNames.find{it.name == name}?.exerciseNum
+    }
+
+
 
 }
