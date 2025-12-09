@@ -3,8 +3,37 @@ package com.example.bakalarka.other_classes
 import android.content.res.Resources
 import androidx.lifecycle.ViewModel
 
+// Data class to represent an exercise with a name and details.
+data class Exercise(val name: String, val details: String)
+
 class AppViewModel : ViewModel() {
 
+
+    //Add training screen
+    var trainingName = ""
+        private set
+
+    var trainingNumber: Int = 0
+        private set
+
+    var exercises = mutableListOf<Exercise>()
+        private set
+
+    fun setTrainingName(name: String) {
+        trainingName = name
+    }
+
+    fun setTrainingNumber(number: String) {
+        trainingNumber = number.toInt()
+    }
+
+    fun addExercise(name: String, sets: String) {
+        exercises.add(Exercise(name, sets))
+    }
+
+
+
+    // velkosti obrazovky
     var screenWidth = 0
         private set
 

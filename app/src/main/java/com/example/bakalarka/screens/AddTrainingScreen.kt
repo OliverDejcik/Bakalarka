@@ -20,8 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.bakalarka.Bakalarka
+import com.example.bakalarka.other_classes.AppViewModel
 import com.example.bakalarka.other_classes.PrimaryButtonGenerator
 import com.example.bakalarka.other_classes.OutlinedTextFieldGenerator
 import com.example.bakalarka.other_classes.SecondaryButtonGenerator
@@ -32,8 +34,19 @@ import com.example.bakalarka.ui.theme.BakalarkaTheme
 @Composable
 fun AddTrainingScreen() {
 
+    val viewModel = AppViewModel()
+
     var trainingName by remember { mutableStateOf("") }
     var trainingNumber by remember { mutableStateOf("") }
+
+    var exercise by remember { mutableStateOf("") }
+    var sets by remember { mutableStateOf("") }
+    var currentExerciseIndex by remember { mutableStateOf(0) }
+
+    var isFormVisible by remember { mutableStateOf(true) }
+    var isExerciseFormVisible by remember { mutableStateOf(false) }
+
+
 
     Column(modifier = Modifier.fillMaxSize()
         .background(color = MaterialTheme.colorScheme.background),
@@ -41,18 +54,33 @@ fun AddTrainingScreen() {
         verticalArrangement = Arrangement.Center
 
     ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(bottom = (10.dp * ElementSizeProvider.getScale())), horizontalAlignment = Alignment.CenterHorizontally) {
-            TextGenerator("Add Training", MaterialTheme.colorScheme.onBackground, "title")
+        if (isFormVisible) {
+            Column(modifier = Modifier.fillMaxWidth().padding(bottom = (10.dp * ElementSizeProvider.getScale())), horizontalAlignment = Alignment.CenterHorizontally) {
+                TextGenerator("Add Training", MaterialTheme.colorScheme.onBackground, "title")
 
-            OutlinedTextFieldGenerator(trainingName,{trainingName = it},"Training Name")
-            OutlinedTextFieldGenerator(trainingNumber,{trainingNumber = it},"Number of exercises")
+                OutlinedTextFieldGenerator(trainingName,{trainingName = it},"Training Name")
+                OutlinedTextFieldGenerator(trainingNumber,{trainingNumber = it},"Number of exercises")
 
-            PrimaryButtonGenerator("Construct training", onClick = {/* posli */})
+                PrimaryButtonGenerator("Construct training", onClick = {isFormVisible = false
+                    isExerciseFormVisible = true
+                    currentExerciseIndex = 1
+                    AppViewModel().setTrainingName(trainingName)
+                    AppViewModel().setTrainingNumber(trainingNumber)
+                })
+            }
+        }else if(isExerciseFormVisible) {
+            Column(modifier = Modifier.fillMaxWidth().padding(bottom = (10.dp * ElementSizeProvider.getScale())), horizontalAlignment = Alignment.CenterHorizontally) {
+                TextGenerator("Add Training", MaterialTheme.colorScheme.onBackground, "title")
+
+                OutlinedTextFieldGenerator(exercise,{exercise = it},"Name of "+(currentExerciseIndex)+". exercise exercise")
+                OutlinedTextFieldGenerator(sets,{sets = it},"Number of sets")
+
+                PrimaryButtonGenerator("Add an Exercise", onClick = {AppViewModel().addExercise(exercise, sets) })
+            }
+
         }
 
-
-
-
+        
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically){
 
             Box(modifier = Modifier.weight(0.7f)){
@@ -74,7 +102,10 @@ fun AddTrainingScreen() {
 
 
 
-    }
+
+
+
+        }
 
 
 
