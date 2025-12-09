@@ -28,7 +28,7 @@ class AppViewModel : ViewModel() {
     }
 
     fun addExercise(name: String, sets: String) {
-        exercises.add(Exercise(name, sets))
+        exercises.add(Exercise(name, sets.toString()))
     }
 
 
