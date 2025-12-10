@@ -66,6 +66,7 @@ class MainActivity : ComponentActivity() {
 
 
 
+
         viewModel.setScreenInfo(displayWidth, displayHeight, density)
 
 

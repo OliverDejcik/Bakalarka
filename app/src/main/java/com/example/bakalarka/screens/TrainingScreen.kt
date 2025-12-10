@@ -1,15 +1,21 @@
 package com.example.bakalarka.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -24,7 +30,12 @@ import com.example.bakalarka.other_classes.OutlinedTextFieldGenerator
 import com.example.bakalarka.other_classes.PrimaryButtonGenerator
 import com.example.bakalarka.other_classes.TextGenerator
 import com.example.bakalarka.ui.theme.BakalarkaTheme
+import kotlinx.coroutines.currentCoroutineContext
 
+
+data class Exercises(val name: String, val sets: String)
+
+@Preview(showSystemUi = true, showBackground = true)
 @Composable
 fun TrainingScreen() {
 
@@ -43,11 +54,23 @@ fun TrainingScreen() {
 
     // Use the viewModel() delegate to get the correct ViewModel instance
     val viewModel: AppViewModel = viewModel()
-    if (viewModel.trainingNames.isEmpty()){
-        viewModel.addTraining("prvy pokus",2)
-        viewModel.addTraining("druhy pokus",3)
-        viewModel.addTraining("treti pokus",4)
-    }
+
+
+    var currentExerciseIndex by remember { mutableStateOf(1) }
+    val actualExercises = remember { mutableStateListOf<Exercises>() }
+
+    val setRepsValues = remember { mutableStateListOf<String>() }
+    val setWeightValues = remember { mutableStateListOf<String>() }
+
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+
+
+
+
+
+
+
 
 
 
@@ -84,9 +107,27 @@ fun TrainingScreen() {
                     text = training.name,
                     onClick = {
                         numberOfExercises = viewModel.getTrainingExerciseNum(training.name)!!
+                        actualExercises.clear()
+                        for (name in viewModel.exercises){
+                            if (name.training == training.name){
+                                actualExercises.add(Exercises(name.name,name.sets))
+                            }
+                        }
+
+                        if (actualExercises.isNotEmpty()) {
+                            val firstExerciseSetCount = actualExercises[0].sets.toInt()
+                            setRepsValues.clear()
+                            setWeightValues.clear()
+                            repeat(firstExerciseSetCount) {
+                                setRepsValues.add("")
+                                setWeightValues.add("")
+                            }
+                        }
+
+                        currentExerciseIndex = 0
                         exercisesColumn = true
                         resultsColumn = false
-                        
+
                     }
                 )
             }
@@ -106,6 +147,51 @@ fun TrainingScreen() {
             modifier = Modifier.background(MaterialTheme.colorScheme.background).fillMaxSize()
         ){
             TextGenerator("Number of Exercises: "+numberOfExercises, color = MaterialTheme.colorScheme.onBackground, "subtitle")
+
+
+            if (currentExerciseIndex < numberOfExercises){
+                Column(verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.background(MaterialTheme.colorScheme.background).fillMaxWidth()
+                ) {
+
+                    TextGenerator("Exercise "+ actualExercises.get(currentExerciseIndex).name, color = MaterialTheme.colorScheme.onBackground, "subtitle")
+                    for (i in 1..actualExercises.get(currentExerciseIndex).sets.toInt()){
+                        Row(horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            OutlinedTextFieldGenerator(
+                                value = setRepsValues[i-1],
+                                onValueChange = { setRepsValues[i-1] = it },
+                                label = "Reps",
+                                isPassword = false,
+                                keyboardType = KeyboardType.Number,
+                                modifier = Modifier.weight(0.8f)
+                            )
+                            OutlinedTextFieldGenerator(
+                                value = setWeightValues[i-1],
+                                onValueChange = { setWeightValues[i-1] = it },
+                                label = "Weight",
+                                isPassword = false,
+                                keyboardType = KeyboardType.Number,
+                                modifier = Modifier.weight(0.2f)
+                            )
+                        }
+                    }
+                    PrimaryButtonGenerator("Next", onClick = {
+                        currentExerciseIndex++
+
+                        Toast.makeText(context, "Exercise "+currentExerciseIndex, Toast.LENGTH_SHORT).show()
+                    })
+
+
+
+                }
+            }else if(currentExerciseIndex == numberOfExercises){
+                exercisesColumn = false
+            }
+
+
             PrimaryButtonGenerator("Back", onClick = {resultsColumn = true
                 searchbarColumn = false}
             )

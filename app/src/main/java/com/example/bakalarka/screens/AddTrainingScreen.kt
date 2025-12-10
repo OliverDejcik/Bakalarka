@@ -76,8 +76,7 @@ fun AddTrainingScreen() {
                         isFormVisible = false
                         isExerciseFormVisible = true
                         currentExerciseIndex = 1
-                        viewModel.setTrainingName(trainingName)
-                        viewModel.setTrainingNumber(trainingNumber)
+                        viewModel.addTraining(trainingName, trainingNumber.toInt())
                     }
                     else{
                         Toast.makeText(context, "Name and number of exercises are required", Toast.LENGTH_SHORT).show()
@@ -98,8 +97,8 @@ fun AddTrainingScreen() {
                 if(currentExerciseIndex == (trainingNumber.toInt())){
                     PrimaryButtonGenerator("Add an Exercise", onClick = {
                         if (exercise.isNotEmpty() && sets.isNotEmpty()){
-                            viewModel.addExercise(exercise, sets)
-                            Toast.makeText(context, "Training added name: "+viewModel.trainingName+"  number of exercises: "+viewModel.trainingNumber+"  ", Toast.LENGTH_SHORT).show()
+                            viewModel.addExercise(exercise, sets,trainingName)
+
                             exercise = ""
                             sets = ""
                             trainingName = ""
@@ -118,7 +117,7 @@ fun AddTrainingScreen() {
                     PrimaryButtonGenerator("Add an Exercise", onClick = {
 
                         if (exercise.isNotEmpty() && sets.isNotEmpty()){
-                            viewModel.addExercise(exercise, sets)
+                            viewModel.addExercise(exercise, sets, trainingName)
                             Toast.makeText(context, "Exercise added name: "+exercise+"  sets: "+sets, Toast.LENGTH_SHORT).show()
                             exercise = ""
                             sets = ""
