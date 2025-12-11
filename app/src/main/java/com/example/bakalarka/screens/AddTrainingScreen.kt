@@ -35,10 +35,9 @@ import com.example.bakalarka.ui.theme.BakalarkaTheme
 
 @SuppressLint("ViewModelConstructorInComposable")
 @Composable
-fun AddTrainingScreen() {
+fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
 
-    // 1. Use the correct viewModel() delegate to get a shared ViewModel instance.
-    val viewModel: AppViewModel = viewModel()
+
 
     var trainingName by remember { mutableStateOf("") }
     var trainingNumber by remember { mutableStateOf("") }

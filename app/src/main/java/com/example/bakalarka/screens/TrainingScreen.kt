@@ -35,9 +35,9 @@ import kotlinx.coroutines.currentCoroutineContext
 
 data class Exercises(val name: String, val sets: String)
 
-@Preview(showSystemUi = true, showBackground = true)
+
 @Composable
-fun TrainingScreen() {
+fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
 
     var search by remember {mutableStateOf("")}
 
@@ -53,7 +53,7 @@ fun TrainingScreen() {
 
 
     // Use the viewModel() delegate to get the correct ViewModel instance
-    val viewModel: AppViewModel = viewModel()
+
 
 
     var currentExerciseIndex by remember { mutableStateOf(1) }
@@ -102,7 +102,7 @@ fun TrainingScreen() {
             TextGenerator("Pick training", color = MaterialTheme.colorScheme.onBackground, "subtitle")
 
             // This assumes 'getTrainings()' returns a list of objects with a 'name' property
-            for(training in viewModel.getTrainings()){
+            for(training in viewModel.getTrainingsj()){
                 PrimaryButtonGenerator(
                     text = training.name,
                     onClick = {
@@ -146,7 +146,6 @@ fun TrainingScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.background(MaterialTheme.colorScheme.background).fillMaxSize()
         ){
-            TextGenerator("Number of Exercises: "+numberOfExercises, color = MaterialTheme.colorScheme.onBackground, "subtitle")
 
 
             if (currentExerciseIndex < numberOfExercises){
@@ -157,6 +156,7 @@ fun TrainingScreen() {
 
                     TextGenerator("Exercise "+ actualExercises.get(currentExerciseIndex).name, color = MaterialTheme.colorScheme.onBackground, "subtitle")
                     for (i in 1..actualExercises.get(currentExerciseIndex).sets.toInt()){
+                        TextGenerator("Set "+i, color = MaterialTheme.colorScheme.onBackground, "small")
                         Row(horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -166,7 +166,7 @@ fun TrainingScreen() {
                                 label = "Reps",
                                 isPassword = false,
                                 keyboardType = KeyboardType.Number,
-                                modifier = Modifier.weight(0.8f)
+                                modifier = Modifier.weight(0.5f)
                             )
                             OutlinedTextFieldGenerator(
                                 value = setWeightValues[i-1],
@@ -174,14 +174,30 @@ fun TrainingScreen() {
                                 label = "Weight",
                                 isPassword = false,
                                 keyboardType = KeyboardType.Number,
-                                modifier = Modifier.weight(0.2f)
+                                modifier = Modifier.weight(0.5f)
                             )
                         }
                     }
                     PrimaryButtonGenerator("Next", onClick = {
+
                         currentExerciseIndex++
 
-                        Toast.makeText(context, "Exercise "+currentExerciseIndex, Toast.LENGTH_SHORT).show()
+                        // Ak ešte stále máme ďalšie cviky
+                        if (currentExerciseIndex < numberOfExercises) {
+
+                            val setsCount = actualExercises[currentExerciseIndex].sets.toInt()
+
+                            // Reset setov
+                            setRepsValues.clear()
+                            setWeightValues.clear()
+
+                            repeat(setsCount) {
+                                setRepsValues.add("")
+                                setWeightValues.add("")
+                            }
+                        }
+
+                        Toast.makeText(context, "Exercise $currentExerciseIndex was completed", Toast.LENGTH_SHORT).show()
                     })
 
 
@@ -189,6 +205,7 @@ fun TrainingScreen() {
                 }
             }else if(currentExerciseIndex == numberOfExercises){
                 exercisesColumn = false
+                searchbarColumn = true
             }
 
 
@@ -204,6 +221,6 @@ fun TrainingScreen() {
 @Composable
 fun TrainingPreview() {
     BakalarkaTheme(darkTheme = true, dynamicColor = false) {
-        TrainingScreen()
+        TrainingScreen(viewModel())
     }
 }

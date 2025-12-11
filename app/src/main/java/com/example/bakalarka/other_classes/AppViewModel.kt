@@ -53,7 +53,7 @@ class AppViewModel : ViewModel() {
 
     // training screen veci
 
-    fun getTrainings(): List<Training> {
+    fun getTrainingsj(): List<Training> {
         return trainings
     }
 
