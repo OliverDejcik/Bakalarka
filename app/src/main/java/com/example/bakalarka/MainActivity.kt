@@ -7,8 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -44,6 +42,9 @@ import com.example.bakalarka.screens.SettingScreen
 import com.example.bakalarka.screens.StatisticsScreen
 import com.example.bakalarka.screens.TrainingScreen
 import com.example.bakalarka.ui.theme.BakalarkaTheme
+import androidx.compose.material.icons.Icons
+
+
 
 
 class MainActivity : ComponentActivity() {
