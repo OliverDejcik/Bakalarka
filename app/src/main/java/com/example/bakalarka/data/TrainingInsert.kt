@@ -3,9 +3,8 @@ package com.example.bakalarka.data
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Workout(
-    val id: Int,
+data class TrainingInsert(
     val user_id: Int,
-    val training_id: Int,
-    val created_at: String
+    val name: String,
+    val number_of_exercises: Int
 )

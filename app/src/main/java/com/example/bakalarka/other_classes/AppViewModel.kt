@@ -5,21 +5,20 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.bakalarka.data.User
 import com.example.bakalarka.supabase.CurrentUserHolder
+import com.example.bakalarka.supabase.addExerciseDB
+import com.example.bakalarka.supabase.addTrainingDB
 import com.example.bakalarka.supabase.addUser
 import com.example.bakalarka.supabase.verifyUser
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 // Data class to represent an exercise with a name and details.
-data class Exercise(val name: String, val sets: String, val training: String)
-data class Training(val name: String, val exerciseNum: Int)
 
 
 class AppViewModel : ViewModel() {
 
-    // --- REGISTRÁCIA ---
-    // Stav, ktorý bude pozorovať Composable funkcia (RegisterScreen)
+
     private val _registrationSuccess = mutableStateOf<Boolean?>(null)
     val registrationSuccess: State<Boolean?> = _registrationSuccess
 
@@ -44,43 +43,66 @@ class AppViewModel : ViewModel() {
 
 
     // --- PRIHLÁSENIE ---
-    private val _loginSuccess = mutableStateOf<Boolean?>(null)
-    val loginSuccess: State<Boolean?> = _loginSuccess
 
-    fun loginUser(email: String, pass: String) {
-        viewModelScope.launch {
+
+    //Pridanie treningu do databazy
+
+
+    // V súbore AppViewModel.kt
+
+// ... (všetky ostatné importy a kód)
+
+
+
+    // --- Ostatné funkcie (registrácia, login, atď.) ...
+
+    // --- Logika pre pridávanie tréningov a cvikov ---
+
+    private val _addTrainingSuccess = mutableStateOf<Boolean?>(null)
+    val addTrainingSuccess: State<Boolean?> = _addTrainingSuccess
+
+    /**
+     * Asynchrónne pridá tréning do databázy a vráti jeho ID.
+     * Táto funkcia je 'suspend', takže musí byť volaná z korutiny.
+     * @return [Int?] ID novovytvoreného tréningu, alebo null v prípade chyby.
+     */
+    suspend fun addTraining(name: String, exerciseNum: Int, userId: Int): Int? {
+        val deferredTrainingId = viewModelScope.async {
             try {
-                val success = verifyUser(email, pass)
-                _loginSuccess.value = success
-                if (success) {
-                    // Po úspešnom prihlásení môžeme získať dáta z CurrentUserHolder
-                    println("User logged in: ${CurrentUserHolder.currentUser?.username}")
-                }
+                addTrainingDB(name, exerciseNum, userId)
             } catch (e: Exception) {
-                println("Login failed: ${e.message}")
-                _loginSuccess.value = false
+                println("Adding training failed: ${e.message}")
+                null
             }
+        }
+        return deferredTrainingId.await()
+    }
+
+    /**
+     * Pridá cvik do databázy. Táto funkcia je tiež suspend.
+     */
+    suspend fun addExercise(trainingId: Int?, userId: Int?, exerciseName: String, sets: String, order: Int) {
+        // Kontrola, či máme všetky potrebné údaje
+        if (trainingId == null || userId == null) {
+            println("Error: Cannot add exercise without trainingId or userId.")
+            return // Ukončíme funkciu, ak chýbajú kľúčové ID
+        }
+        try {
+            // Predpokladáme, že máte funkciu addExerciseDB v SupabaseApi.kt
+            // Ak nie, musíte ju vytvoriť!
+            addExerciseDB(trainingId, userId, exerciseName, sets.toInt(), order)
+            println("Exercise '$exerciseName' added to training $trainingId")
+        } catch (e: Exception) {
+            println("Adding exercise failed: ${e.message}")
+            // Tu môžete prípadne signalizovať chybu do UI
         }
     }
 
-    fun resetLoginState() {
-        _loginSuccess.value = null
+    fun resetAddTrainingState() {
+        _addTrainingSuccess.value = null
     }
 
-    // --- Add training screen ---
-    var exercises = mutableListOf<Exercise>()
-        private set
-
-    var trainings = mutableListOf<Training>()
-        private set
-
-    fun addExercise(name: String, sets: String, training: String) {
-        exercises.add(Exercise(name, sets, training))
-    }
-
-    fun addTraining(name: String, exerciseNum: Int) {
-        trainings.add(Training(name, exerciseNum))
-    }
+    // ... (zvyšok kódu vo ViewModeli)
 
 
     // --- VEĽKOSTI OBRAZOVKY ---
@@ -104,14 +126,4 @@ class AppViewModel : ViewModel() {
     }
 
     fun pxToDp(px: Int): Float = px / density
-
-
-    // --- TRAINING SCREEN VECI ---
-    fun getTrainingsj(): List<Training> {
-        return trainings
-    }
-
-    fun getTrainingExerciseNum(name: String): Int? {
-        return trainings.find { it.name == name }?.exerciseNum
-    }
 }

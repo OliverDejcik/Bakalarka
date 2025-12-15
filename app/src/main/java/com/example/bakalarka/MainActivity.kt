@@ -96,15 +96,7 @@ fun Bakalarka(navController: NavHostController, viewModel: AppViewModel) {
     /*
      toto ifko je iba docasne nech nemusim furt pridavat treningy jak keket
      */
-    if (viewModel.trainings.isEmpty()){
-        viewModel.addTraining("training1",1)
-        viewModel.addTraining("training2",2)
 
-        viewModel.addExercise("exercise11","2","training1")
-
-        viewModel.addExercise("exercise12","4","training1")
-        viewModel.addExercise("exercise21","3","training2")
-    }
 
 
 

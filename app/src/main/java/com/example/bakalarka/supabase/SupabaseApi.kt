@@ -1,11 +1,18 @@
 package com.example.bakalarka.supabase
 
+import ExerciseInsert
+import com.example.bakalarka.data.IdResponse
+import com.example.bakalarka.data.Training
+import com.example.bakalarka.data.TrainingInsert
 import com.example.bakalarka.data.User
 import io.github.jan.supabase.postgrest.from
-import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.buildJsonObject
 import org.mindrot.jbcrypt.BCrypt
+
+
+
 
 suspend fun addUser(username: String, password: String, email: String){
     return withContext(Dispatchers.IO) {
@@ -13,6 +20,67 @@ suspend fun addUser(username: String, password: String, email: String){
         supabase.from("users").insert(mapOf("username" to username, "password_hash" to hashedPassword, "email" to email))
     }
 }
+
+suspend fun addTrainingDB(
+    name: String,
+    number_of_exercises: Int,
+    userId: Int
+): Int? {
+    return withContext(Dispatchers.IO) {
+
+        val insertData = TrainingInsert(
+            user_id = userId,
+            name = name,
+            number_of_exercises = number_of_exercises
+        )
+
+        val createdTraining = supabase
+            .from("trainings")
+            .insert(insertData) {
+                select()
+            }
+            .decodeSingleOrNull<Training>()
+
+        if (createdTraining != null) {
+
+            println("Training created with ID: ${createdTraining.id}")
+        } else {
+            CurrentTrainingHolder.clear()
+        }
+
+        createdTraining?.id
+    }
+}
+
+
+
+
+
+suspend fun addExerciseDB(
+    trainingId: Int,
+    userId: Int,
+    name: String,
+    sets: Int,
+    orderIndex: Int
+) {
+    return withContext(Dispatchers.IO) {
+
+        val insertData = ExerciseInsert(
+            training_id = trainingId,
+            user_id = userId,
+            name = name,
+            sets_count = sets,
+            order_index = orderIndex
+        )
+
+        supabase
+            .from("exercises")
+            .insert(insertData)
+    }
+}
+
+
+
 
 
 suspend fun verifyUser(username: String, password: String): Boolean {

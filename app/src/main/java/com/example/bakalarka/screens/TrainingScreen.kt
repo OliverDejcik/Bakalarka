@@ -102,6 +102,7 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
             TextGenerator("Pick training", color = MaterialTheme.colorScheme.onBackground, "subtitle")
 
             // This assumes 'getTrainings()' returns a list of objects with a 'name' property
+            /*
             for(training in viewModel.getTrainingsj()){
                 PrimaryButtonGenerator(
                     text = training.name,
@@ -137,7 +138,7 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
             },modifier = Modifier.padding(top = 10.dp)
             )
 
-
+    */
 
 
         }
