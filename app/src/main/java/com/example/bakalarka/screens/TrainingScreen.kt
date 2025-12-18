@@ -12,12 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,17 +29,21 @@ import com.example.bakalarka.other_classes.AppViewModel
 import com.example.bakalarka.other_classes.OutlinedTextFieldGenerator
 import com.example.bakalarka.other_classes.PrimaryButtonGenerator
 import com.example.bakalarka.other_classes.TextGenerator
+import com.example.bakalarka.supabase.CurrentUserHolder
+import com.example.bakalarka.supabase.addWorkoutToDB
 import com.example.bakalarka.ui.theme.BakalarkaTheme
-import kotlinx.coroutines.currentCoroutineContext
-
-
-data class Exercises(val name: String, val sets: String)
+import kotlinx.coroutines.launch
 
 
 @Composable
 fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
 
     var search by remember {mutableStateOf("")}
+    val listTrainings by viewModel.trainings
+    val listExercises by viewModel.exercises
+    val userId = CurrentUserHolder.currentUser?.id
+    var workoutId: Int? by remember { mutableStateOf(0) }
+
 
     var searchbarColumn by remember { mutableStateOf(true) }
     var resultsColumn by remember { mutableStateOf(false) }
@@ -52,15 +56,15 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
     var numberOfExerciseSets by remember { mutableStateOf(0) }
 
 
-    // Use the viewModel() delegate to get the correct ViewModel instance
+    val scope = rememberCoroutineScope()
 
 
 
     var currentExerciseIndex by remember { mutableStateOf(1) }
-    val actualExercises = remember { mutableStateListOf<Exercises>() }
 
-    val setRepsValues = remember { mutableStateListOf<String>() }
-    val setWeightValues = remember { mutableStateListOf<String>() }
+    val setDataSet = remember { mutableStateListOf<SetData>() }
+
+
 
     val context = androidx.compose.ui.platform.LocalContext.current
 
@@ -88,6 +92,12 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
             PrimaryButtonGenerator("Search", onClick = {
                 resultsColumn = true
                 searchbarColumn = false
+                if (userId != null) {
+                    viewModel.loadTrainingsByName(search, userId)
+                } else {
+                    Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show()
+                }
+
 
             })
 
@@ -101,30 +111,21 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
         {
             TextGenerator("Pick training", color = MaterialTheme.colorScheme.onBackground, "subtitle")
 
-            // This assumes 'getTrainings()' returns a list of objects with a 'name' property
-            /*
-            for(training in viewModel.getTrainingsj()){
+
+
+            for(training in listTrainings) {
                 PrimaryButtonGenerator(
                     text = training.name,
                     onClick = {
-                        numberOfExercises = viewModel.getTrainingExerciseNum(training.name)!!
-                        actualExercises.clear()
-                        for (name in viewModel.exercises){
-                            if (name.training == training.name){
-                                actualExercises.add(Exercises(name.name,name.sets))
+                        numberOfExercises = training.number_of_exercises
+                        if(userId != null){
+                            scope.launch{
+                                workoutId =  viewModel.addWorkout(userId,training.id)
                             }
-                        }
 
-                        if (actualExercises.isNotEmpty()) {
-                            val firstExerciseSetCount = actualExercises[0].sets.toInt()
-                            setRepsValues.clear()
-                            setWeightValues.clear()
-                            repeat(firstExerciseSetCount) {
-                                setRepsValues.add("")
-                                setWeightValues.add("")
-                            }
+                        }else{
+                            Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show()
                         }
-
                         currentExerciseIndex = 0
                         exercisesColumn = true
                         resultsColumn = false
@@ -138,7 +139,7 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
             },modifier = Modifier.padding(top = 10.dp)
             )
 
-    */
+
 
 
         }
@@ -154,24 +155,25 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.background(MaterialTheme.colorScheme.background).fillMaxWidth()
                 ) {
+                    var textString = remember { mutableStateOf("") }
 
-                    TextGenerator("Exercise "+ actualExercises.get(currentExerciseIndex).name, color = MaterialTheme.colorScheme.onBackground, "subtitle")
-                    for (i in 1..actualExercises.get(currentExerciseIndex).sets.toInt()){
+                    TextGenerator("Exercise "+listExercises.first {it.order_index == currentExerciseIndex}.name, color = MaterialTheme.colorScheme.onBackground, "subtitle")
+                    for (i in 1..listExercises.first {it.order_index == currentExerciseIndex}.sets_count){
                         TextGenerator("Set "+i, color = MaterialTheme.colorScheme.onBackground, "small")
                         Row(horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             OutlinedTextFieldGenerator(
-                                value = setRepsValues[i-1],
-                                onValueChange = { setRepsValues[i-1] = it },
+                                value = setDataSet[i].reps,
+                                onValueChange = { setDataSet[i] = setDataSet[i].copy(reps = it) },
                                 label = "Reps",
                                 isPassword = false,
                                 keyboardType = KeyboardType.Number,
                                 modifier = Modifier.weight(0.5f)
                             )
                             OutlinedTextFieldGenerator(
-                                value = setWeightValues[i-1],
-                                onValueChange = { setWeightValues[i-1] = it },
+                                value = setDataSet[i].weight,
+                                onValueChange = { setDataSet[i] = setDataSet[i].copy(weight = it) },
                                 label = "Weight",
                                 isPassword = false,
                                 keyboardType = KeyboardType.Number,
@@ -181,24 +183,23 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                     }
                     PrimaryButtonGenerator("Next", onClick = {
 
-                        currentExerciseIndex++
+                        scope.launch {
+                            if (userId != null && workoutId != null) {
+                                // 'setDataSet' je zoznam, ktorý posielame
+                                viewModel.addExerciseToWorkout(userId, workoutId!!, listExercises.first{it.order_index == currentExerciseIndex}.id, setDataSet.toList(),listExercises.first{it.order_index == currentExerciseIndex}.sets_count)
+                                Toast.makeText(context, "Exercise '${listExercises.first{it.order_index == currentExerciseIndex}.name}' saved!", Toast.LENGTH_SHORT).show()
 
-                        // Ak ešte stále máme ďalšie cviky
-                        if (currentExerciseIndex < numberOfExercises) {
-
-                            val setsCount = actualExercises[currentExerciseIndex].sets.toInt()
-
-                            // Reset setov
-                            setRepsValues.clear()
-                            setWeightValues.clear()
-
-                            repeat(setsCount) {
-                                setRepsValues.add("")
-                                setWeightValues.add("")
+                                // Prejdeme na ďalší cvik alebo ukončíme tréning
+                                if (currentExerciseIndex < numberOfExercises) {
+                                    currentExerciseIndex++
+                                } else {
+                                    Toast.makeText(context, "Workout finished!", Toast.LENGTH_LONG).show()
+                                    exercisesColumn = false
+                                    searchbarColumn = true
+                                }
                             }
                         }
-
-                        Toast.makeText(context, "Exercise $currentExerciseIndex was completed", Toast.LENGTH_SHORT).show()
+                        currentExerciseIndex++
                     })
 
 
@@ -210,7 +211,8 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
             }
 
 
-            PrimaryButtonGenerator("Back", onClick = {resultsColumn = true
+            PrimaryButtonGenerator("Back", onClick = {
+                resultsColumn = true
                 searchbarColumn = false}
             )
         }
@@ -225,3 +227,8 @@ fun TrainingPreview() {
         TrainingScreen(viewModel())
     }
 }
+
+data class SetData(
+    var reps: String = "",
+    var weight: String = ""
+)

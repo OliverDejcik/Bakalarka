@@ -5,15 +5,19 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.bakalarka.supabase.CurrentUserHolder
+import com.example.bakalarka.data.Exercise
+import com.example.bakalarka.data.Training
+import com.example.bakalarka.screens.SetData
 import com.example.bakalarka.supabase.addExerciseDB
+import com.example.bakalarka.supabase.addExerciseToWorkoutDB
 import com.example.bakalarka.supabase.addTrainingDB
 import com.example.bakalarka.supabase.addUser
-import com.example.bakalarka.supabase.verifyUser
+import com.example.bakalarka.supabase.addWorkoutToDB
+import com.example.bakalarka.supabase.getExercisesByTrainingId
+import com.example.bakalarka.supabase.getTrainingsByName
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
-// Data class to represent an exercise with a name and details.
 
 
 class AppViewModel : ViewModel() {
@@ -42,30 +46,12 @@ class AppViewModel : ViewModel() {
     }
 
 
-    // --- PRIHLÁSENIE ---
 
-
-    //Pridanie treningu do databazy
-
-
-    // V súbore AppViewModel.kt
-
-// ... (všetky ostatné importy a kód)
-
-
-
-    // --- Ostatné funkcie (registrácia, login, atď.) ...
-
-    // --- Logika pre pridávanie tréningov a cvikov ---
 
     private val _addTrainingSuccess = mutableStateOf<Boolean?>(null)
     val addTrainingSuccess: State<Boolean?> = _addTrainingSuccess
 
-    /**
-     * Asynchrónne pridá tréning do databázy a vráti jeho ID.
-     * Táto funkcia je 'suspend', takže musí byť volaná z korutiny.
-     * @return [Int?] ID novovytvoreného tréningu, alebo null v prípade chyby.
-     */
+
     suspend fun addTraining(name: String, exerciseNum: Int, userId: Int): Int? {
         val deferredTrainingId = viewModelScope.async {
             try {
@@ -78,23 +64,20 @@ class AppViewModel : ViewModel() {
         return deferredTrainingId.await()
     }
 
-    /**
-     * Pridá cvik do databázy. Táto funkcia je tiež suspend.
-     */
+
     suspend fun addExercise(trainingId: Int?, userId: Int?, exerciseName: String, sets: String, order: Int) {
-        // Kontrola, či máme všetky potrebné údaje
+
         if (trainingId == null || userId == null) {
             println("Error: Cannot add exercise without trainingId or userId.")
-            return // Ukončíme funkciu, ak chýbajú kľúčové ID
+            return
         }
         try {
-            // Predpokladáme, že máte funkciu addExerciseDB v SupabaseApi.kt
-            // Ak nie, musíte ju vytvoriť!
+
             addExerciseDB(trainingId, userId, exerciseName, sets.toInt(), order)
             println("Exercise '$exerciseName' added to training $trainingId")
         } catch (e: Exception) {
             println("Adding exercise failed: ${e.message}")
-            // Tu môžete prípadne signalizovať chybu do UI
+
         }
     }
 
@@ -102,7 +85,63 @@ class AppViewModel : ViewModel() {
         _addTrainingSuccess.value = null
     }
 
-    // ... (zvyšok kódu vo ViewModeli)
+    private val _addWorkoutSuccess = mutableStateOf<Boolean?>(null)
+    val addWorkoutSuccess: State<Boolean?> = _addWorkoutSuccess
+
+
+    suspend fun addExerciseToWorkout(userId: Int, workoutId: Int, exerciseId: Int, setDataSet: List<SetData>,sets_count:Int) {
+        viewModelScope.launch {
+            try {
+                // Volanie suspend funkcie z databázovej vrstvy
+                for (i in 1..sets_count) {
+                    addExerciseToWorkoutDB(userId, workoutId, exerciseId, setDataSet[i].weight.toInt(), setDataSet[i].reps.toInt(),i)
+                }
+                _registrationSuccess.value = true // Registrácia úspešná
+            } catch (e: Exception) {
+                // Ak Supabase alebo sieť vráti chybu, zachytíme ju tu
+                println("Registration failed: ${e.message}")
+                _registrationSuccess.value = false // Registrácia neúspešná
+            }
+        }
+    }
+
+    suspend fun addWorkout(userID:Int,trainingID:Int): Int? {
+        val deferredWorkoutId = viewModelScope.async {
+            try {
+                addWorkoutToDB(userID,trainingID)
+            } catch (e: Exception) {
+                println("Adding workout failed: ${e.message}")
+                null
+            }
+        }
+        return deferredWorkoutId.await()
+    }
+
+    private val _trainings = mutableStateOf<List<Training>>(emptyList())
+    val trainings: State<List<Training>> = _trainings
+
+    fun loadTrainingsByName(name: String, userId: Int) {
+        viewModelScope.launch {
+            try {
+                _trainings.value = getTrainingsByName(name, userId)
+            } catch (e: Exception) {
+                _trainings.value = emptyList()
+            }
+        }
+    }
+
+    private val _exercises = mutableStateOf<List<Exercise>>(emptyList())
+    val exercises: State<List<Exercise>> = _exercises
+
+    fun loadExercisesByTrainingId(trainingId: Int) {
+        viewModelScope.launch {
+            try {
+                _exercises.value = getExercisesByTrainingId(trainingId)
+            } catch (e: Exception) {
+                _exercises.value = emptyList()
+            }
+        }
+    }
 
 
     // --- VEĽKOSTI OBRAZOVKY ---

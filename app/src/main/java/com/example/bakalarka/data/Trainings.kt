@@ -10,3 +10,4 @@ data class Training(
     val number_of_exercises: Int,
     val created_at: String
 )
+
