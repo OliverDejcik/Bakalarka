@@ -89,21 +89,42 @@ class AppViewModel : ViewModel() {
     val addWorkoutSuccess: State<Boolean?> = _addWorkoutSuccess
 
 
-    suspend fun addExerciseToWorkout(userId: Int, workoutId: Int, exerciseId: Int, setDataSet: List<SetData>,sets_count:Int) {
-        viewModelScope.launch {
-            try {
-                // Volanie suspend funkcie z databázovej vrstvy
-                for (i in 1..sets_count) {
-                    addExerciseToWorkoutDB(userId, workoutId, exerciseId, setDataSet[i].weight.toInt(), setDataSet[i].reps.toInt(),i)
+    suspend fun addExerciseToWorkout(
+        userId: Int,
+        workoutId: Int,
+        exerciseId: Int,
+        setDataSet: List<SetData>,
+        sets_count: Int
+    ) {
+        try {
+            for (i in 0 until sets_count) {
+
+                val reps = setDataSet[i].reps.toIntOrNull()
+                val weight = setDataSet[i].weight.toIntOrNull()
+
+                if (reps == null || weight == null) {
+                    println("Invalid input in set ${i + 1}")
+                    return
                 }
-                _registrationSuccess.value = true // Registrácia úspešná
-            } catch (e: Exception) {
-                // Ak Supabase alebo sieť vráti chybu, zachytíme ju tu
-                println("Registration failed: ${e.message}")
-                _registrationSuccess.value = false // Registrácia neúspešná
+
+                addExerciseToWorkoutDB(
+                    userId,
+                    workoutId,
+                    exerciseId,
+                    weight,
+                    reps,
+                    i + 1
+                )
             }
+
+            println("Workout exercises inserted successfully")
+
+        } catch (e: Exception) {
+            println("addExerciseToWorkout failed: ${e.message}")
         }
     }
+
+
 
     suspend fun addWorkout(userID:Int,trainingID:Int): Int? {
         val deferredWorkoutId = viewModelScope.async {

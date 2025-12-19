@@ -22,11 +22,40 @@ suspend fun addUser(username: String, password: String, email: String){
         supabase.from("users").insert(mapOf("username" to username, "password_hash" to hashedPassword, "email" to email))
     }
 }
-suspend fun addExerciseToWorkoutDB(userId: Int, workoutId: Int, exerciseId: Int, weight: Int,reps: Int,set_number:Int){
+suspend fun addExerciseToWorkoutDB(
+    userId: Int,
+    workoutId: Int,
+    exerciseId: Int,
+    weight: Int,
+    reps: Int,
+    setNumber: Int
+) {
     return withContext(Dispatchers.IO) {
-        supabase.from("workout_exercises").insert(mapOf("user_id" to userId, "workout_id" to workoutId, "exercise_id" to exerciseId, "weight" to weight, "reps" to reps,"set_number" to set_number))
+        try {
+            val result = supabase
+                .from("workout_exercises")
+                .insert(
+                    mapOf(
+                        "user_id" to userId,
+                        "workout_id" to workoutId,
+                        "exercise_id" to exerciseId,
+                        "weight" to weight,
+                        "reps" to reps,
+                        "set_number" to setNumber
+                    )
+                ) {
+                    select() // ⬅️ DONÚTI SUPABASE VRÁTIŤ RESPONSE
+                }
+
+            println("Workout exercise inserted: $result")
+
+        } catch (e: Exception) {
+            println("INSERT FAILED: ${e.message}")
+            throw e
+        }
     }
 }
+
 
 
 suspend fun addWorkoutToDB(userId: Int,trainingId: Int): Int? {
@@ -147,7 +176,7 @@ suspend fun getTrainingsByName(name: String,userId: Int): List<Training> {
         .from("trainings")
         .select {
             filter {
-                eq("id", userId)
+                eq("user_id", userId)
                 ilike("name", "%$name%")
             }
         }
