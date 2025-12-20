@@ -55,6 +55,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.constraintlayout.compose)
+    implementation(libs.androidx.compose.ui.test)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -75,5 +76,9 @@ dependencies {
 
     //password hash
     implementation("org.mindrot:jbcrypt:0.4")
+
+    //grafy
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
 
 }

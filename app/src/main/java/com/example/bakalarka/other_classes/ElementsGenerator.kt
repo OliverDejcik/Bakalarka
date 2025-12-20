@@ -1,16 +1,24 @@
 package com.example.bakalarka.other_classes
 
 import android.R
+import android.R.attr.description
 import android.util.DisplayMetrics
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -26,15 +34,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bakalarka.other_classes.ElementSizeProvider
+import com.github.mikephil.charting.data.LineDataSet
+
+
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.formatter.ValueFormatter
 
 
 @Composable
@@ -102,6 +120,135 @@ fun OutlinedTextFieldGenerator(
         )
     )
 }
+
+
+@Composable
+fun SelectBox(
+    options: List<String>,
+    selected: String,
+    onSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    OutlinedTextField(
+        value = selected,
+        onValueChange = {},
+        readOnly = true,
+        label = { Text("Select option") },
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { expanded = true }
+    )
+
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false }
+    ) {
+        options.forEach { option ->
+            DropdownMenuItem(
+                text = { Text(option) },
+                onClick = {
+                    onSelected(option)
+                    expanded = false
+                }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SelectBoxMaterial(
+    options: List<String>,
+    selected: String,
+    onSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded }
+    ) {
+        OutlinedTextField(
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
+            readOnly = true,
+            value = selected,
+            onValueChange = {},
+            label = { Text("Select option") },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded)
+            }
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onSelected(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun LineChartView(
+    data: List<Pair<Float, Float>>,
+    descriptionText: String,
+    yAxisSuffix: String = ""
+) {
+    AndroidView(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp),
+        factory = { context ->
+            LineChart(context).apply {
+
+                // 🔹 Popis grafu (vpravo dole)
+                description.text = descriptionText
+                description.textSize = 12f
+
+                // 🔹 Vypnutie pravej osi
+                axisRight.isEnabled = false
+
+                // 🔹 Y os (ľavá)
+                axisLeft.apply {
+                    granularity = 1f
+                }
+
+                // 🔹 X os dole
+                xAxis.position = XAxis.XAxisPosition.BOTTOM
+            }
+        },
+        update = { chart ->
+            val entries = data.map { Entry(it.first, it.second) }
+
+            val dataSet = LineDataSet(entries, descriptionText).apply {
+                lineWidth = 2f
+                setDrawCircles(true)
+
+                // 🔹 ČÍSLA PRI BODOCH
+                setDrawValues(true)
+                valueTextSize = 10f
+            }
+
+            chart.data = LineData(dataSet)
+            chart.invalidate()
+        }
+    )
+}
+
+
+
+
 
 
 
