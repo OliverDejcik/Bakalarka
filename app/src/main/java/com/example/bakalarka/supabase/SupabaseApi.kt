@@ -7,6 +7,7 @@ import com.example.bakalarka.data.Training
 import com.example.bakalarka.data.TrainingInsert
 import com.example.bakalarka.data.User
 import com.example.bakalarka.data.Workout
+import com.example.bakalarka.data.WorkoutExercise
 import com.example.bakalarka.data.WorkoutInsert
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.Dispatchers
@@ -181,6 +182,17 @@ suspend fun getTrainingsByName(name: String,userId: Int): List<Training> {
             }
         }
         .decodeList<Training>()
+}
+
+suspend fun getWorkoutExercisesByExerciseId(exerciseId: Int): List<WorkoutExercise> {
+    return supabase
+        .from("workout_exercises")
+        .select {
+            filter {
+                eq("exercise_id", exerciseId)
+            }
+        }
+        .decodeList<WorkoutExercise>()
 }
 
 suspend fun getTrainingsByUserId(userId: Int): List<Training> {

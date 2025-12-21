@@ -34,13 +34,16 @@ fun StatisticsScreen(viewModel: AppViewModel = viewModel()) {
     var selectedWorkout by remember { mutableStateOf("Pick your workout") }
     var selectedExercise by remember { mutableStateOf("Pick your exercise") }
 
-    var selectedWorkoutId by remember { mutableStateOf(0) }
     var selectedExerciseId by remember { mutableStateOf(0) }
 
 
     val userId = CurrentUserHolder.currentUser?.id
     val listTrainings by viewModel.trainings
     val listExercises by viewModel.exercises
+    val listWorkoutExercises by viewModel.workoutExercises
+    val chartData by viewModel.chartData
+
+
 
 
     // --- OPRAVENÁ A DOPLNENÁ ČASŤ ---
@@ -77,7 +80,6 @@ fun StatisticsScreen(viewModel: AppViewModel = viewModel()) {
                 onSelected = { selectedWorkout = it
                     listTrainings.find { training -> training.name == selectedWorkout }?.let { training ->
                         viewModel.loadExercisesByTrainingId(training.id)
-                        selectedWorkoutId = training.id
                     }
                 }
             )
@@ -86,7 +88,7 @@ fun StatisticsScreen(viewModel: AppViewModel = viewModel()) {
                     options = listExercises.map { it.name },
                     selected = selectedExercise,
                     onSelected = { selectedExercise = it
-                        listExercises.find { exercise -> exercise.name == selectedWorkout }
+                        listExercises.find { exercise -> exercise.name == selectedExercise }
                             ?.let { exercise ->
                                 selectedExerciseId = exercise.id
                             }
@@ -94,7 +96,9 @@ fun StatisticsScreen(viewModel: AppViewModel = viewModel()) {
                 )
             }
             if (selectedExercise != "Pick your exercise") {
-                PrimaryButtonGenerator("Get statistics", onClick = { StatsPicker = false })
+                PrimaryButtonGenerator("Get statistics", onClick = { StatsPicker = false
+                viewModel.loadWorkoutExercisesByExerciseId(selectedExerciseId)
+                })
             }
 
         }
@@ -106,21 +110,21 @@ fun StatisticsScreen(viewModel: AppViewModel = viewModel()) {
                 .background(MaterialTheme.colorScheme.background)
                 .fillMaxSize()
         ) {
+            LaunchedEffect(listWorkoutExercises) {
+                viewModel.build30Day1RMChart(listWorkoutExercises)
+            }
+
+
+
+
+
+
+
 
 
             LineChartView(
-                data = listOf(
-                    1f to 80f,
-                    2f to 82f,
-                    3f to 85f,
-                    4f to 88f,
-                    5f to 90f,
-                    6f to 92f,
-                    7f to 95f,
-                    8f to 98f,
-                    9f to 100f
-                ),
-                descriptionText = "Bench Press Progress",
+                chartData,
+                "Bench Press Progress",
             )
 
 

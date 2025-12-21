@@ -1,7 +1,9 @@
 package com.example.bakalarka.other_classes
 
+import com.example.bakalarka.data.WorkoutExercise
 
-class `1RMCalculator` {
+
+class OneRepMaxcalculator {
 
     val viewModel = AppViewModel()
 
@@ -10,6 +12,10 @@ class `1RMCalculator` {
     fun Get1RMFun(weight: Float, reps: Int): Float {
         val oneRepMax = weight * (1 + reps.toFloat() / 30)
         return oneRepMax
+    }
+
+    fun constructDataForGraph(list: List<WorkoutExercise>){
+
     }
 
 
