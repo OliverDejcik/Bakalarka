@@ -121,41 +121,6 @@ fun OutlinedTextFieldGenerator(
     )
 }
 
-
-@Composable
-fun SelectBox(
-    options: List<String>,
-    selected: String,
-    onSelected: (String) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    OutlinedTextField(
-        value = selected,
-        onValueChange = {},
-        readOnly = true,
-        label = { Text("Select option") },
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { expanded = true }
-    )
-
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = { expanded = false }
-    ) {
-        options.forEach { option ->
-            DropdownMenuItem(
-                text = { Text(option) },
-                onClick = {
-                    onSelected(option)
-                    expanded = false
-                }
-            )
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectBoxMaterial(
@@ -203,7 +168,6 @@ fun SelectBoxMaterial(
 fun LineChartView(
     data: List<Pair<Float, Float>>,
     descriptionText: String,
-    yAxisSuffix: String = ""
 ) {
     AndroidView(
         modifier = Modifier
@@ -213,8 +177,8 @@ fun LineChartView(
             LineChart(context).apply {
 
                 // 🔹 Popis grafu (vpravo dole)
-                description.text = descriptionText
-                description.textSize = 12f
+                //description.text = descriptionText
+                // description.textSize = 10f
 
                 // 🔹 Vypnutie pravej osi
                 axisRight.isEnabled = false

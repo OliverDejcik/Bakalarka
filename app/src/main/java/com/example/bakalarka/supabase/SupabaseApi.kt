@@ -183,6 +183,17 @@ suspend fun getTrainingsByName(name: String,userId: Int): List<Training> {
         .decodeList<Training>()
 }
 
+suspend fun getTrainingsByUserId(userId: Int): List<Training> {
+    return supabase
+        .from("trainings")
+        .select {
+            filter {
+                eq("user_id", userId)
+            }
+        }
+        .decodeList<Training>()
+}
+
 suspend fun getExercisesByTrainingId(trainingId: Int): List<Exercise> {
     return supabase
         .from("exercises")

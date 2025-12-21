@@ -15,6 +15,7 @@ import com.example.bakalarka.supabase.addUser
 import com.example.bakalarka.supabase.addWorkoutToDB
 import com.example.bakalarka.supabase.getExercisesByTrainingId
 import com.example.bakalarka.supabase.getTrainingsByName
+import com.example.bakalarka.supabase.getTrainingsByUserId
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
@@ -142,6 +143,8 @@ class AppViewModel : ViewModel() {
     val trainings: State<List<Training>> = _trainings
 
     fun loadTrainingsByName(name: String, userId: Int) {
+        _trainings.value = emptyList()
+
         viewModelScope.launch {
             try {
                 _trainings.value = getTrainingsByName(name, userId)
@@ -150,6 +153,18 @@ class AppViewModel : ViewModel() {
             }
         }
     }
+
+    fun loadTrainingsByUserId(userId: Int) {
+        _trainings.value = emptyList()
+        viewModelScope.launch {
+            try {
+                _trainings.value = getTrainingsByUserId(userId)
+            } catch (e: Exception) {
+                _trainings.value = emptyList()
+            }
+        }
+    }
+
 
     private val _exercises = mutableStateOf<List<Exercise>>(emptyList())
     val exercises: State<List<Exercise>> = _exercises
