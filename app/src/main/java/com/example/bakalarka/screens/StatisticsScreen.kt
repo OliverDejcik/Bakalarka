@@ -36,6 +36,10 @@ fun StatisticsScreen(viewModel: AppViewModel = viewModel()) {
 
     var selectedExerciseId by remember { mutableStateOf(0) }
 
+    var selectedDays  by remember { mutableStateOf("Last 30 days") }
+    val daysOptions = listOf("Last 14 days", "Last 30 days", "Last 180 days", "Last 360 days")
+
+
 
     val userId = CurrentUserHolder.currentUser?.id
     val listTrainings by viewModel.trainings
@@ -97,7 +101,7 @@ fun StatisticsScreen(viewModel: AppViewModel = viewModel()) {
             }
             if (selectedExercise != "Pick your exercise") {
                 PrimaryButtonGenerator("Get statistics", onClick = { StatsPicker = false
-                viewModel.loadWorkoutExercisesByExerciseId(selectedExerciseId)
+                    viewModel.loadWorkoutExercisesByExerciseId(selectedExerciseId)
                 })
             }
 
@@ -111,22 +115,24 @@ fun StatisticsScreen(viewModel: AppViewModel = viewModel()) {
                 .fillMaxSize()
         ) {
             LaunchedEffect(listWorkoutExercises) {
-                viewModel.build30Day1RMChart(listWorkoutExercises)
+                viewModel.build30Day1RMChart(listWorkoutExercises, selectedDays)
             }
-
-
-
-
-
-
-
-
+            SelectBoxMaterial(
+                options = daysOptions,
+                selected = selectedDays,
+                onSelected = { selectedDays = it
+                    listTrainings.find { training -> training.name == selectedWorkout }?.let {
+                        viewModel.build30Day1RMChart(listWorkoutExercises, selectedDays)
+                    }
+                }
+            )
 
             LineChartView(
                 chartData,
                 "Bench Press Progress",
             )
 
+            PrimaryButtonGenerator("Back", onClick = { StatsPicker = true })
 
 
         }
@@ -143,4 +149,3 @@ fun StatisticsScreenPreview() {
         StatisticsScreen()
     }
 }
-

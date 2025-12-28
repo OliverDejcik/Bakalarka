@@ -222,10 +222,19 @@ class AppViewModel : ViewModel() {
 
 
 
-    fun build30Day1RMChart(sets: List<WorkoutExercise>) {
+    fun build30Day1RMChart(sets: List<WorkoutExercise>,daysString: String = "") {
 
         val today = LocalDate.now()
-        val fromDate = today.minusDays(30)
+        val fromDate = when (daysString) {
+            "Last 14 days" -> today.minusDays(14)
+            "Last 30 days" -> today.minusDays(30)
+            "Last 180 days" -> today.minusDays(180)
+            "Last 360 days" -> today.minusDays(360)
+            else -> today.minusDays(30) // default
+        }
+
+
+
 
         val chartPoints = sets
             // 1. zjednodušenie

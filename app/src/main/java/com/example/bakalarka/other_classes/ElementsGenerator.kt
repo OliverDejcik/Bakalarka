@@ -1,58 +1,41 @@
 package com.example.bakalarka.other_classes
 
-import android.R
-import android.R.attr.description
-import android.util.DisplayMetrics
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+// Android
+import android.graphics.Color
+import androidx.compose.ui.viewinterop.AndroidView
+
+// Compose – layout & runtime
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.bakalarka.other_classes.ElementSizeProvider
-import com.github.mikephil.charting.data.LineDataSet
 
+// App
 
+// MPAndroidChart
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.github.mikephil.charting.highlight.Highlight
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener
+
+// Date
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 
 @Composable
@@ -72,7 +55,7 @@ fun SecondaryButtonGenerator(text: String,   onClick: () -> Unit, modifier: Modi
 @Composable
 fun TextGenerator(
     text: String,
-    color: Color,
+    color: ComposeColor,
     textType: String,
     bold: Boolean = false,
     modifier: Modifier = Modifier
@@ -166,52 +149,208 @@ fun SelectBoxMaterial(
 
 @Composable
 fun LineChartView(
-    data: List<Pair<Float, Float>>,
+    data: List<Pair<Float, Float>>, // x = epochDay, y = 1RM
     descriptionText: String,
 ) {
-    AndroidView(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(300.dp),
-        factory = { context ->
-            LineChart(context).apply {
+    var selectedValue by remember { mutableStateOf<Float?>(null) }
+    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
 
-                // 🔹 Popis grafu (vpravo dole)
-                //description.text = descriptionText
-                // description.textSize = 10f
+    val onBackgroundColor = composeColorToAndroid(MaterialTheme.colorScheme.onBackground)
+    val BackgroundColor = composeColorToAndroid(MaterialTheme.colorScheme.background)
+    val PrimaryColor = composeColorToAndroid(MaterialTheme.colorScheme.primary)
+    val SecondaryColor = composeColorToAndroid(MaterialTheme.colorScheme.secondary)
+    val TertiaryColor = composeColorToAndroid(MaterialTheme.colorScheme.tertiary)
+    val onPrimaryColor = composeColorToAndroid(MaterialTheme.colorScheme.onPrimary)
+    val onSecondaryColor = composeColorToAndroid(MaterialTheme.colorScheme.onSecondary)
+    val onTertiaryColor = composeColorToAndroid(MaterialTheme.colorScheme.onTertiary)
 
-                // 🔹 Vypnutie pravej osi
-                axisRight.isEnabled = false
 
-                // 🔹 Y os (ľavá)
-                axisLeft.apply {
-                    granularity = 1f
+
+    Column {
+        Column(
+            modifier = Modifier
+                .padding(12.dp)
+        ) {
+            TextGenerator(text = selectedValue?.let { "One Rep Max: ${it.toInt()} kg" } ?: "", MaterialTheme.colorScheme.onBackground, "body",true)
+
+            TextGenerator(text = selectedDate?.let { "Date: ${it}"} ?: "", MaterialTheme.colorScheme.onBackground, "ultrasmall",false)
+
+        }
+
+        AndroidView(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp),
+
+            factory = { context ->
+                LineChart(context).apply {
+
+                    // ===============================
+                    // ZÁKLADNÉ NASTAVENIA
+                    // ===============================
+
+                    setBackgroundColor(Color.TRANSPARENT)
+                    setDrawGridBackground(false)
+
+                    setTouchEnabled(true)
+                    isDragEnabled = true
+                    setPinchZoom(false)
+                    setScaleEnabled(false)
+                    isDoubleTapToZoomEnabled = false
+
+                    animateX(800)
+
+                    // ===============================
+                    // DESCRIPTION
+                    // ===============================
+
+                    description.text = descriptionText
+                    description.textSize = 12f
+                    description.textColor = onBackgroundColor
+                    description.isEnabled = true
+
+                    // ===============================
+                    // LEGENDA
+                    // ===============================
+
+                    legend.isEnabled = true
+                    legend.textSize = 12f
+                    legend.textColor = Color.GRAY
+                    legend.form =
+                        com.github.mikephil.charting.components.Legend.LegendForm.LINE
+
+                    // ===============================
+                    // Y AXIS – ĽAVÁ
+                    // ===============================
+
+                    axisLeft.apply {
+                        axisMinimum = 0f
+                        granularity = 10f
+                        textSize = 12f
+                        textColor = Color.GRAY
+                        setDrawGridLines(true)
+                        setDrawZeroLine(true)
+                        zeroLineColor = Color.GRAY
+                    }
+
+                    // ===============================
+                    // Y AXIS – PRAVÁ
+                    // ===============================
+
+                    axisRight.isEnabled = false
+
+                    // ===============================
+                    // X AXIS – SPODNÁ (DÁTUMY)
+                    // ===============================
+
+                    xAxis.apply {
+                        position = XAxis.XAxisPosition.BOTTOM
+                        textSize = 10f // Mierne zmenšené písmo pre lepšiu čitateľnosť
+                        textColor = onBackgroundColor
+                        setDrawGridLines(false) // Mriežka pre X os vypnutá
+
+                        // --- OPRAVA A DOPLNENIE JE TU ---
+
+                        // 1. Povieme grafu, že najmenší krok je 1 (t.j. nezobrazuj medzihodnoty)
+                        granularity = 1f
+                        isGranularityEnabled = true // Zapneme granularitu
+
+                        // 2. Prinútime graf, aby sa pokúsil zobraziť toľko labelov, koľko máme dátových bodov
+                        // Ak sa budú prekrývať, graf ich môže automaticky skryť.
+                        labelCount = data.size
+                        setLabelCount(data.size, true)
+
+
+                        // 3. Formátovač, ktorý z hodnoty X (epochDay) urobí textový dátum
+                        valueFormatter = object : ValueFormatter() {
+                            override fun getFormattedValue(value: Float): String {
+                                // Pre istotu zaokrúhlime, aby sme predišli nepresnostiam
+                                val epochDay = value.toLong()
+                                // Skontrolujeme, či máme pre tento deň reálne dáta
+                                val hasDataForThisDay = data.any { it.first.toLong() == epochDay }
+                                return if (hasDataForThisDay) {
+                                    LocalDate.ofEpochDay(epochDay)
+                                        .format(DateTimeFormatter.ofPattern("dd.MM"))
+                                } else {
+                                    "" // Ak pre tento deň dáta nemáme, vrátime prázdny reťazec
+                                }
+                            }
+                        }
+                    }
+
+                    // ===============================
+                    // LISTENER – POHYB PRSTOM
+                    // ===============================
+
+                    setOnChartValueSelectedListener(object :
+                        OnChartValueSelectedListener {
+                        override fun onValueSelected(e: Entry?, h: Highlight?) {
+                            e ?: return
+                            selectedValue = e.y
+                            selectedDate =
+                                LocalDate.ofEpochDay(e.x.toLong())
+                        }
+
+                        override fun onNothingSelected() {
+                            selectedValue = null
+                            selectedDate = null
+                        }
+                    })
+                }
+            },
+
+            update = { chart ->
+
+                // ===============================
+                // PREVOD DÁT
+                // ===============================
+
+                val entries = data.map {
+                    Entry(it.first, it.second)
                 }
 
-                // 🔹 X os dole
-                xAxis.position = XAxis.XAxisPosition.BOTTOM
+                // ===============================
+                // DATASET
+                // ===============================
+
+                val dataSet = LineDataSet(entries, descriptionText).apply {
+
+                    lineWidth = 3f
+                    color = PrimaryColor
+                    mode = LineDataSet.Mode.HORIZONTAL_BEZIER
+
+                    setDrawCircles(true)
+                    circleRadius = 6f
+                    setCircleColor(PrimaryColor)
+                    setDrawCircleHole(true)
+                    circleHoleRadius = 3f
+                    circleHoleColor = onPrimaryColor
+
+                    setDrawValues(false)
+
+
+                    highLightColor = onBackgroundColor
+                    highlightLineWidth = 2f
+                    setDrawHighlightIndicators(true)
+                    setDrawHorizontalHighlightIndicator(false)
+                }
+
+                chart.data = LineData(dataSet)
+                chart.invalidate()
             }
-        },
-        update = { chart ->
-            val entries = data.map { Entry(it.first, it.second) }
+        )
 
-            val dataSet = LineDataSet(entries, descriptionText).apply {
-                lineWidth = 2f
-                setDrawCircles(true)
+        // ===============================
+        // OVERLAY TEXT (ĽAVÝ HORNÝ ROH)
+        // ===============================
 
-                // 🔹 ČÍSLA PRI BODOCH
-                setDrawValues(true)
-                valueTextSize = 10f
-            }
 
-            chart.data = LineData(dataSet)
-            chart.invalidate()
-        }
-    )
+    }
 }
 
-
-
+fun composeColorToAndroid(color: ComposeColor): Int {
+    return color.toArgb()
+}
 
 
 

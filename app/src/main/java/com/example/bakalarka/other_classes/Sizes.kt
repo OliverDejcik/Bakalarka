@@ -43,6 +43,7 @@ object ElementSizeProvider {
             "small" -> 14.sp
             "button" -> 16.sp
             "label" -> 12.sp
+            "ultrasmall" -> 10.sp
 
             else -> 16.sp // default
         }

@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.androidx.compose.ui.test)
+    implementation(libs.androidx.compose.remote.creation.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -79,6 +80,7 @@ dependencies {
 
     //grafy
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("co.yml:ycharts:2.1.0")
 
 
 }
