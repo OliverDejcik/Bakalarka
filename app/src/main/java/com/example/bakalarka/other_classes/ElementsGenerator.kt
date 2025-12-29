@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 // App
@@ -58,6 +59,7 @@ fun TextGenerator(
     color: ComposeColor,
     textType: String,
     bold: Boolean = false,
+    textAlign: TextAlign? = null,
     modifier: Modifier = Modifier
 ) {
     Text(
@@ -65,6 +67,7 @@ fun TextGenerator(
         fontSize = ElementSizeProvider.getSize(textType),
         fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal,
         color = color,
+        textAlign = textAlign,
         modifier = modifier
     )
 }
@@ -215,7 +218,7 @@ fun LineChartView(
 
                     legend.isEnabled = true
                     legend.textSize = 12f
-                    legend.textColor = Color.GRAY
+                    legend.textColor = onBackgroundColor
                     legend.form =
                         com.github.mikephil.charting.components.Legend.LegendForm.LINE
 
@@ -227,10 +230,10 @@ fun LineChartView(
                         axisMinimum = 0f
                         granularity = 10f
                         textSize = 12f
-                        textColor = Color.GRAY
-                        setDrawGridLines(true)
+                        textColor = onBackgroundColor
+                        setDrawGridLines(false)
                         setDrawZeroLine(true)
-                        zeroLineColor = Color.GRAY
+                        zeroLineColor = onBackgroundColor
                     }
 
                     // ===============================
@@ -242,41 +245,8 @@ fun LineChartView(
                     // ===============================
                     // X AXIS – SPODNÁ (DÁTUMY)
                     // ===============================
+                    xAxis.isEnabled = false
 
-                    xAxis.apply {
-                        position = XAxis.XAxisPosition.BOTTOM
-                        textSize = 10f // Mierne zmenšené písmo pre lepšiu čitateľnosť
-                        textColor = onBackgroundColor
-                        setDrawGridLines(false) // Mriežka pre X os vypnutá
-
-                        // --- OPRAVA A DOPLNENIE JE TU ---
-
-                        // 1. Povieme grafu, že najmenší krok je 1 (t.j. nezobrazuj medzihodnoty)
-                        granularity = 1f
-                        isGranularityEnabled = true // Zapneme granularitu
-
-                        // 2. Prinútime graf, aby sa pokúsil zobraziť toľko labelov, koľko máme dátových bodov
-                        // Ak sa budú prekrývať, graf ich môže automaticky skryť.
-                        labelCount = data.size
-                        setLabelCount(data.size, true)
-
-
-                        // 3. Formátovač, ktorý z hodnoty X (epochDay) urobí textový dátum
-                        valueFormatter = object : ValueFormatter() {
-                            override fun getFormattedValue(value: Float): String {
-                                // Pre istotu zaokrúhlime, aby sme predišli nepresnostiam
-                                val epochDay = value.toLong()
-                                // Skontrolujeme, či máme pre tento deň reálne dáta
-                                val hasDataForThisDay = data.any { it.first.toLong() == epochDay }
-                                return if (hasDataForThisDay) {
-                                    LocalDate.ofEpochDay(epochDay)
-                                        .format(DateTimeFormatter.ofPattern("dd.MM"))
-                                } else {
-                                    "" // Ak pre tento deň dáta nemáme, vrátime prázdny reťazec
-                                }
-                            }
-                        }
-                    }
 
                     // ===============================
                     // LISTENER – POHYB PRSTOM
