@@ -54,6 +54,13 @@ fun SecondaryButtonGenerator(text: String,   onClick: () -> Unit, modifier: Modi
 }
 
 @Composable
+fun SettingsButtonGenerator(text: String,   onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Button(onClick = {onClick()},modifier = modifier,colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary), shape = RoundedCornerShape(35)){
+        TextGenerator(text, MaterialTheme.colorScheme.onSecondary, "ultrasmall",false)
+    }
+}
+
+@Composable
 fun TextGenerator(
     text: String,
     color: ComposeColor,
