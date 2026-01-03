@@ -172,6 +172,48 @@ suspend fun verifyUser(username: String, password: String): Boolean {
     }
 }
 
+suspend fun verifyUserByIdAndPass(userId: Int, password: String): Boolean {
+    return withContext(Dispatchers.IO) {
+        val userResponse = supabase.from("users")
+            .select()
+            {
+                filter {
+                    eq("id", userId)
+                }
+            }
+            .decodeSingleOrNull<User>()
+
+        if (userResponse != null) {
+            val storedHash = userResponse.password_hash
+            val isPasswordCorrect = BCrypt.checkpw(password, storedHash)
+
+            if (isPasswordCorrect) {
+                return@withContext true
+            }
+        }
+        return@withContext false
+    }
+}
+
+suspend fun changeUserPassword(userId: Int, newPassword: String) {
+    return withContext(Dispatchers.IO) {// 1. Zahashujeme nové heslo pomocou BCrypt
+        val newHashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt())
+
+        // 2. Použijeme operáciu `update` na zmenu záznamu v tabuľke "users"
+        supabase.from("users")
+            .update(
+                mapOf("password_hash" to newHashedPassword) // Hodnota, ktorú meníme
+            ) {
+                // 3. Pomocou filtra špecifikujeme, KTORÝ záznam sa má zmeniť
+                filter {
+                    eq("id", userId)
+                }
+            }
+        // Po úspešnom update sa funkcia ukončí. Môžeš pridať aj logovanie.
+        println("Password for user $userId has been changed.")
+    }
+}
+
 suspend fun getTrainingsByName(name: String,userId: Int): List<Training> {
     return supabase
         .from("trainings")

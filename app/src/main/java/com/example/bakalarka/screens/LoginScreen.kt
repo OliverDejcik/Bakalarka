@@ -128,10 +128,4 @@ fun LoginScreen(navController: NavHostController, viewModel: AppViewModel = view
     }
 }
 
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    BakalarkaTheme(darkTheme = true, dynamicColor = false) {
-        LoginScreen(navController = rememberNavController())
-    }
-}
+
