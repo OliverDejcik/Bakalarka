@@ -35,10 +35,4 @@ fun MainScreen(navController: NavHostController,viewModel: AppViewModel = viewMo
     }
 }
 
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-fun MainScreenPreview() {
-    BakalarkaTheme(darkTheme = true, dynamicColor = false) {
-        MainScreen(navController = rememberNavController())
-    }
-}
+

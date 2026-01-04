@@ -141,11 +141,4 @@ fun StatisticsScreen(viewModel: AppViewModel = viewModel()) {
 
 }
 
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-fun StatisticsScreenPreview() {
-    BakalarkaTheme(darkTheme = true, dynamicColor = false) {
-        Bakalarka(navController = rememberNavController(),viewModel())
-        StatisticsScreen()
-    }
-}
+

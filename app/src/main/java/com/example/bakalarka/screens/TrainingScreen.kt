@@ -303,12 +303,3 @@ data class SetData(
     val weight: String = ""
 )
 
-/* ================= PREVIEW ================= */
-
-@Preview(showSystemUi = true)
-@Composable
-fun TrainingPreview() {
-    BakalarkaTheme(darkTheme = true, dynamicColor = false) {
-        TrainingScreen()
-    }
-}

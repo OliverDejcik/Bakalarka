@@ -187,11 +187,3 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
         }
     }
 }
-
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-fun AddTrainingPreview() {
-    BakalarkaTheme(darkTheme = true, dynamicColor = false) {
-        AddTrainingScreen()
-    }
-}

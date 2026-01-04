@@ -105,10 +105,4 @@ fun RegisterScreen(navController: NavHostController, viewModel: AppViewModel = v
 }
 
 
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-fun RegisterScreenPreview() {
-    BakalarkaTheme(darkTheme = true, dynamicColor = false) {
-        RegisterScreen(navController = rememberNavController())
-    }
-}
+
