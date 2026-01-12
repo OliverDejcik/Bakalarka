@@ -18,6 +18,8 @@ import com.example.bakalarka.supabase.getExercisesByTrainingId
 import com.example.bakalarka.supabase.getTrainingsByName
 import com.example.bakalarka.supabase.getTrainingsByUserId
 import com.example.bakalarka.supabase.getWorkoutExercisesByExerciseId
+import com.example.bakalarka.supabase.removeExerciseById
+import com.example.bakalarka.supabase.updateExerciseNameReps
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -69,21 +71,65 @@ class AppViewModel : ViewModel() {
     }
 
 
-    suspend fun addExercise(trainingId: Int?, userId: Int?, exerciseName: String, sets: String, order: Int) {
-
+    fun addExercise(
+        trainingId: Int?,
+        userId: Int?,
+        exerciseName: String,
+        sets: String,
+        order: Int,
+        onSuccess: (() -> Unit)? = null,
+        onError: ((String) -> Unit)? = null
+    ) {
         if (trainingId == null || userId == null) {
-            println("Error: Cannot add exercise without trainingId or userId.")
+            onError?.invoke("Invalid training or user")
             return
         }
-        try {
 
-            addExerciseDB(trainingId, userId, exerciseName, sets.toInt(), order)
-            println("Exercise '$exerciseName' added to training $trainingId")
-        } catch (e: Exception) {
-            println("Adding exercise failed: ${e.message}")
+        val setsInt = sets.toIntOrNull()
+        if (setsInt == null) {
+            onError?.invoke("Sets must be a number")
+            return
+        }
 
+        viewModelScope.launch {
+            try {
+                addExerciseDB(
+                    trainingId,
+                    userId,
+                    exerciseName,
+                    setsInt,
+                    order
+                )
+                onSuccess?.invoke()
+            } catch (e: Exception) {
+                onError?.invoke(e.message ?: "Unknown error")
+            }
         }
     }
+
+    fun updateExercise(
+        exerciseId: Int,
+        name: String,
+        reps: Int,
+        trainingId: Int
+    ) {
+        viewModelScope.launch {
+            updateExerciseNameReps(exerciseId, name, reps)
+            loadExercisesByTrainingId(trainingId)
+        }
+    }
+
+    fun deleteExercise(
+        exerciseId: Int,
+        trainingId: Int
+    ) {
+        viewModelScope.launch {
+            removeExerciseById(exerciseId, trainingId)
+            loadExercisesByTrainingId(trainingId)
+        }
+    }
+
+
 
     fun resetAddTrainingState() {
         _addTrainingSuccess.value = null
@@ -141,6 +187,8 @@ class AppViewModel : ViewModel() {
         }
         return deferredWorkoutId.await()
     }
+
+
 
     private val _trainings = mutableStateOf<List<Training>>(emptyList())
     val trainings: State<List<Training>> = _trainings

@@ -140,7 +140,7 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
                 PrimaryButtonGenerator(buttonText, onClick = {
                     if (exercise.isNotBlank() && sets.isNotBlank()) {
                         // Spustíme korutinu na pridanie cviku
-                        scope.launch {
+
                             viewModel.addExercise(createdTrainingId, userId, exercise, sets, currentExerciseIndex)
 
                             if (currentExerciseIndex == totalExercises) {
@@ -163,7 +163,7 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
                                 sets = ""
                                 currentExerciseIndex++
                             }
-                        }
+
                     } else {
                         Toast.makeText(context, "Name and number of sets are required", Toast.LENGTH_SHORT).show()
                     }

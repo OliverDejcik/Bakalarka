@@ -18,10 +18,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,7 +38,14 @@ import com.example.bakalarka.other_classes.SecondaryButtonGenerator
 import com.example.bakalarka.other_classes.SettingsButtonGenerator
 import com.example.bakalarka.other_classes.TextGenerator
 import com.example.bakalarka.supabase.CurrentUserHolder
+import com.example.bakalarka.supabase.removeExerciseById
+import com.example.bakalarka.supabase.updateExerciseNameReps
+import com.example.bakalarka.supabase.updateTrainingName
 import com.example.bakalarka.ui.theme.BakalarkaTheme
+import io.github.jan.supabase.network.SupabaseApi
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlin.coroutines.coroutineContext
 
 @Composable
 fun SettingScreen(viewModel: AppViewModel = viewModel()) {
@@ -58,6 +67,14 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
 
     var isTrainingSelected by remember {mutableStateOf(false)}
 
+    var addExercise by remember { mutableStateOf(false) }
+
+    val scope = rememberCoroutineScope()
+
+    var newExerciseName by remember { mutableStateOf("") }
+    var newReps by remember { mutableStateOf("") }
+
+
 
 
 
@@ -76,7 +93,10 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
         if (!isTrainingSelected) {
 
             Row(modifier = Modifier.padding(bottom = 3.dp).fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.onBackground)){
-                TextGenerator("Training Name", MaterialTheme.colorScheme.onBackground, "body",true,modifier = Modifier.weight(1f))
+                Box(modifier = Modifier.weight(1f),contentAlignment = Alignment.Center){
+                    TextGenerator("Training Name", MaterialTheme.colorScheme.onBackground, "body",true)
+
+                }
 
                 Box(modifier = Modifier.weight(1f),contentAlignment = Alignment.Center){
                 }
@@ -94,7 +114,7 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                         isTrainingSelected = true
                     }, modifier = Modifier.weight(0.7f))
 
-                    SettingsButtonGenerator("Delete", onClick = { /* popup na potvrdenie vymazania */ }, modifier = Modifier.weight(0.8f))
+                    SettingsButtonGenerator("Delete", onClick = { /*popup na potvrdenie vymazania*/ }, modifier = Modifier.weight(0.8f))
                 }
             }
         }else{
@@ -111,13 +131,15 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                             .fillMaxWidth()
                             .border(1.dp, MaterialTheme.colorScheme.onBackground)
                     ) {
-                        TextGenerator(
-                            "Training Name",
-                            MaterialTheme.colorScheme.onBackground,
-                            "body",
-                            true,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Box(modifier = Modifier.weight(1f),contentAlignment = Alignment.Center){
+                            TextGenerator(
+                                "Training Name",
+                                MaterialTheme.colorScheme.onBackground,
+                                "body",
+                                true,
+                            )
+                        }
+
                         Box(modifier = Modifier.weight(1f))
                     }
 
@@ -141,10 +163,15 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                             SettingsButtonGenerator(
                                 "Update",
                                 onClick = {
-                                    // viewModel.updateTrainingName(
-                                    //     training.id,
-                                    //     editedTrainingName
-                                    // )
+                                    scope.launch {
+                                        updateTrainingName(
+                                            training.id,
+                                            editedTrainingName
+                                        )
+                                        viewModel.loadTrainingsByUserId(userId!!)
+                                        isTrainingSelected = false
+                                    }
+
                                     Toast.makeText(
                                         context,
                                         "Training updated",
@@ -164,10 +191,7 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                 Box(modifier = Modifier.weight(0.5f),contentAlignment = Alignment.Center){
                     TextGenerator("Reps", MaterialTheme.colorScheme.onBackground, "body",true)
                 }
-
-
-                Box(modifier = Modifier.weight(0.7f)){
-                }
+                Box(modifier = Modifier.weight(1.5f),contentAlignment = Alignment.Center){}
             }
             for (exercise in listExercises) {
 
@@ -180,7 +204,7 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                 }
 
                 Row {
-                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.weight(1.5f), contentAlignment = Alignment.Center) {
                         OutlinedTextFieldGenerator(
                             value = editedExerciseName,
                             onValueChange = { editedExerciseName = it },
@@ -194,22 +218,83 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                             value = editedReps,
                             onValueChange = { editedReps = it },
                             label = "",
-                            false
+                            false,
+                            keyboardType = KeyboardType.Number
                         )
                     }
 
-                    Box(contentAlignment = Alignment.Center) {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
                         SettingsButtonGenerator("Update", onClick = {
-                            // viewModel.updateExerciseNameReps(
-                            //     exercise.id,
-                            //     editedExerciseName,
-                            //     editedReps.toInt()
-                            // )
+                            val reps = editedReps.toIntOrNull()
+                            if (reps == null) {
+                                Toast.makeText(context, "Reps must be a number", Toast.LENGTH_SHORT).show()
+                                return@SettingsButtonGenerator
+                            }
+
+                            viewModel.updateExercise(
+                                exercise.id,
+                                editedExerciseName,
+                                reps,
+                                selectedTrainingId
+                            )
+
                             Toast.makeText(context, "Exercise updated", Toast.LENGTH_SHORT).show()
                         })
+
+
+                    }
+
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
+                        SettingsButtonGenerator("Delete", onClick = {
+                            viewModel.deleteExercise(
+                                exercise.id,
+                                selectedTrainingId
+                            )
+
+                            Toast.makeText(context, "Exercise deleted", Toast.LENGTH_SHORT).show()
+                        })
+
                     }
                 }
             }
+
+            Row{
+                SettingsButtonGenerator("Add exercise", onClick = {
+                    addExercise = true
+                })
+
+            }
+            if (addExercise) {
+                Column {
+                    OutlinedTextFieldGenerator(newExerciseName, {newExerciseName = it}, "Exercise name", false)
+                    OutlinedTextFieldGenerator(newReps, {newReps = it}, "Reps", false, keyboardType = KeyboardType.Number)
+                    SettingsButtonGenerator("Add exercise", onClick = {
+                        val order = listExercises.size + 1
+
+                        viewModel.addExercise(
+                            selectedTrainingId,
+                            userId,
+                            newExerciseName,
+                            newReps,
+                            order,
+                            onSuccess = {
+                                viewModel.loadExercisesByTrainingId(selectedTrainingId)
+                                newExerciseName = ""
+                                newReps = ""
+                                addExercise = false
+                            },
+                            onError = {
+                                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    })
+
+
+                }
+            }
+            PrimaryButtonGenerator("Back", onClick = {
+                isTrainingSelected = false
+            })
 
 
 

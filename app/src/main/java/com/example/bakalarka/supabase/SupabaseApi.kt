@@ -13,6 +13,9 @@ import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.mindrot.jbcrypt.BCrypt
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+
 
 
 
@@ -209,8 +212,6 @@ suspend fun changeUserPassword(userId: Int, newPassword: String) {
                     eq("id", userId)
                 }
             }
-        // Po úspešnom update sa funkcia ukončí. Môžeš pridať aj logovanie.
-        println("Password for user $userId has been changed.")
     }
 }
 
@@ -257,4 +258,63 @@ suspend fun getExercisesByTrainingId(trainingId: Int): List<Exercise> {
             }
         }
         .decodeList<Exercise>()
+}
+
+suspend fun updateExerciseNameReps(
+    exerciseId: Int,
+    newName: String,
+    newReps: Int
+) {
+    supabase
+        .from("exercises")
+        .update(
+            buildJsonObject {
+                put("name", newName)
+                put("sets_count", newReps)
+            }
+        ) {
+            filter {
+                eq("id", exerciseId)
+            }
+        }
+}
+
+suspend fun updateTrainingName(
+    trainingId: Int,
+    newName: String
+){
+    supabase
+        .from("trainings")
+        .update(
+            buildJsonObject {
+                put("name", newName)
+            }
+        ) {
+            filter {
+                eq("id", trainingId)
+            }
+        }
+}
+
+suspend fun removeExerciseById(exerciseId: Int, trainingId: Int){
+    supabase
+        .from("exercises")
+        .delete {
+            filter {
+                eq("id", exerciseId)
+            }
+        }
+
+    supabase
+        .from("trainings")
+        .update(
+            buildJsonObject {
+                put("number_of_exercises", -1)
+            }
+        ){
+            filter {
+                eq("id", trainingId)
+            }
+        }
+
 }
