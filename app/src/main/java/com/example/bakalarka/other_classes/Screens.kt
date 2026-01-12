@@ -2,7 +2,6 @@ package com.example.bakalarka.other_classes
 
 
 sealed class Screens(val route: String) {
-    data object Main : Screens("main")
     data object Home : Screens("home")
     data object Login : Screens("login")
     data object Register : Screens("register")

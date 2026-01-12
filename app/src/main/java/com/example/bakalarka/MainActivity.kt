@@ -35,7 +35,6 @@ import com.example.bakalarka.other_classes.Screens
 import com.example.bakalarka.screens.AddTrainingScreen
 import com.example.bakalarka.screens.HomeScreen
 import com.example.bakalarka.screens.LoginScreen
-import com.example.bakalarka.screens.MainScreen
 import com.example.bakalarka.screens.ProfileScreen
 import com.example.bakalarka.screens.RegisterScreen
 import com.example.bakalarka.screens.SettingScreen
@@ -203,10 +202,8 @@ fun Bakalarka(navController: NavHostController, viewModel: AppViewModel) {
 fun NavGraph(navController: NavHostController, viewModel: AppViewModel) {
     NavHost(
         navController = navController,
-        startDestination = Screens.Main.route
+        startDestination = Screens.Login.route
     ) {
-        // FIX: Pass the SAME viewModel instance to EVERY screen that needs it.
-        composable(Screens.Main.route) { MainScreen(navController, viewModel) }
         composable(Screens.Home.route) { HomeScreen(viewModel) }
         composable(Screens.Login.route) { LoginScreen(navController, viewModel) }
         composable(Screens.Register.route) { RegisterScreen(navController, viewModel) }
@@ -215,18 +212,5 @@ fun NavGraph(navController: NavHostController, viewModel: AppViewModel) {
         composable(Screens.Statistics.route) { StatisticsScreen(viewModel) }
         composable(Screens.Profile.route) { ProfileScreen(viewModel) }
         composable(Screens.Settings.route) { SettingScreen(viewModel) }
-    }
-}
-
-
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-fun BakalarkaPreview() {
-    BakalarkaTheme {
-        val navController = rememberNavController()
-        // FIX for Preview: Create a temporary instance of the ViewModel for the preview to use.
-        // The `viewModel()` delegate will provide a basic, un-scoped instance here.
-        val previewViewModel: AppViewModel = viewModel()
-        Bakalarka(navController = navController, viewModel = previewViewModel)
     }
 }
