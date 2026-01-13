@@ -14,7 +14,10 @@ import com.example.bakalarka.supabase.addExerciseToWorkoutDB
 import com.example.bakalarka.supabase.addTrainingDB
 import com.example.bakalarka.supabase.addUser
 import com.example.bakalarka.supabase.addWorkoutToDB
+import com.example.bakalarka.supabase.deleteWorkoutDB
 import com.example.bakalarka.supabase.getExercisesByTrainingId
+import com.example.bakalarka.supabase.getLastWorkoutIdByTrainingIdAndDate
+import com.example.bakalarka.supabase.getLastWorkoutbyWorkoutId
 import com.example.bakalarka.supabase.getTrainingsByName
 import com.example.bakalarka.supabase.getTrainingsByUserId
 import com.example.bakalarka.supabase.getWorkoutExercisesByExerciseId
@@ -243,6 +246,30 @@ class AppViewModel : ViewModel() {
         }
     }
 
+    private val _previousWorkout = mutableStateOf<List<WorkoutExercise>>(emptyList())
+    val previousWorkout: State<List<WorkoutExercise>> = _previousWorkout
+
+    fun loadpreviousWorkout(trainingId: Int){
+        viewModelScope.launch {
+            val workoutId = getLastWorkoutIdByTrainingIdAndDate(trainingId,LocalDate.now())
+
+            if (workoutId == null){
+                println("je to v pici")
+            }else{
+                try {
+                    _previousWorkout.value = getLastWorkoutbyWorkoutId(workoutId)
+                    println("neni to v pici")
+                } catch (e: Exception) {
+                    println("error")
+                    _previousWorkout.value = emptyList()
+                }
+            }
+
+
+        }
+    }
+
+
     private val _chartData = mutableStateOf<List<Pair<Float, Float>>>(emptyList())
     val chartData: State<List<Pair<Float, Float>>> = _chartData
 
@@ -322,6 +349,17 @@ class AppViewModel : ViewModel() {
         _chartData.value = chartPoints
     }
 
+    fun deleteWorkout(workoutId: Int) {
+        viewModelScope.launch {
+            try {
+                deleteWorkoutDB(workoutId)
+            } catch (e: Exception) {
+                println("Delete workout failed: ${e.message}")
+            }
+        }
+    }
+
+
 
 
 
@@ -354,3 +392,4 @@ class AppViewModel : ViewModel() {
 
     fun pxToDp(px: Int): Float = px / density
 }
+

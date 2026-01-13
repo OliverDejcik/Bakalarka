@@ -10,14 +10,14 @@ import com.example.bakalarka.data.Workout
 import com.example.bakalarka.data.WorkoutExercise
 import com.example.bakalarka.data.WorkoutInsert
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.LocalDate
 import org.mindrot.jbcrypt.BCrypt
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-
-
-
+import java.time.format.DateTimeFormatter
 
 
 suspend fun addUser(username: String, password: String, email: String){
@@ -318,3 +318,47 @@ suspend fun removeExerciseById(exerciseId: Int, trainingId: Int){
         }
 
 }
+
+suspend fun getLastWorkoutbyWorkoutId(workoutId: Int): List<WorkoutExercise> {
+    return supabase
+        .from("workout_exercises")
+        .select {
+            filter {
+                eq("workout_id", workoutId)
+            }
+        }
+        .decodeList<WorkoutExercise>()
+
+}
+
+suspend fun getLastWorkoutIdByTrainingIdAndDate(trainingId: Int,localDate: java.time.LocalDate): Int? {
+    val todayStr = localDate.format(DateTimeFormatter.ISO_DATE)
+
+    return supabase
+        .from("workouts")
+        .select {
+            filter {
+                eq("training_id", trainingId)
+                lt("created_at", todayStr)
+            }
+            order("created_at", Order.DESCENDING)
+            limit(1)
+        }
+        .decodeSingleOrNull<Workout>()
+        ?.id
+}
+
+
+
+// supabase/WorkoutApi.kt
+suspend fun deleteWorkoutDB(workoutId: Int) {
+    supabase
+        .from("workouts")
+        .delete {
+            filter {
+                eq("id", workoutId)
+            }
+        }
+}
+
+

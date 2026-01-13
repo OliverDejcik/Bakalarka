@@ -1,8 +1,12 @@
 package com.example.bakalarka.screens
 
+import android.R.attr.bottom
+import android.R.attr.top
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.MaterialTheme
@@ -11,13 +15,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bakalarka.other_classes.*
 import com.example.bakalarka.supabase.CurrentUserHolder
-import com.example.bakalarka.ui.theme.BakalarkaTheme
+import kotlinx.coroutines.NonDisposableHandle.parent
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalQueries.localDate
+import kotlin.math.ceil
 
 @Composable
 fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
@@ -26,6 +37,7 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
 
     val listTrainings by viewModel.trainings
     val listExercises by viewModel.exercises
+    val listPreviousWorkout by viewModel.previousWorkout
 
     val userId = CurrentUserHolder.currentUser?.id
     var workoutId by remember { mutableStateOf<Int?>(null) }
@@ -47,6 +59,7 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .systemBarsPadding()
                 .background(MaterialTheme.colorScheme.background),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -92,6 +105,7 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .systemBarsPadding()
                 .background(MaterialTheme.colorScheme.background),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -107,39 +121,40 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                 PrimaryButtonGenerator(
                     text = training.name,
                     onClick = {
-                        if (userId != null) {
-                            scope.launch {
+                        if (userId == null) {
+                            Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButtonGenerator
+                        }
 
-                                val newWorkoutId =
-                                    viewModel.addWorkout(userId, training.id)
-
-                                workoutId = newWorkoutId
-
-                                if (newWorkoutId != null) {
-                                    viewModel.loadExercisesByTrainingId(training.id)
-
-                                    currentExerciseIndex = 0
-                                    resultsColumn = false
-                                    exercisesColumn = true
+                        scope.launch {
 
 
-                            } else {
-                                    Toast.makeText(
-                                        context,
-                                        "Failed to start workout",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
+
+
+
+                            val newWorkoutId = viewModel.addWorkout(userId, training.id)
+                            if (newWorkoutId == null) {
+                                Toast.makeText(context, "Failed to start workout", Toast.LENGTH_SHORT).show()
+                                return@launch
                             }
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "User not logged in",
-                                Toast.LENGTH_SHORT
-                            ).show()
+
+                            workoutId = newWorkoutId
+
+                            viewModel.loadpreviousWorkout(training.id)
+                            viewModel.loadExercisesByTrainingId(training.id)
+
+                            // 3️⃣ počkaj na to, kým sa exercises objavia
+                            snapshotFlow { listExercises }
+                                .first { it.isNotEmpty() }
+
+                            // 4️⃣ UI je READY → prepni obrazovku
+                            currentExerciseIndex = 0
+                            resultsColumn = false
+                            exercisesColumn = true
                         }
                     }
                 )
+
             }
 
             PrimaryButtonGenerator(
@@ -172,15 +187,7 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
             }
         }
 
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-
+        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             if (exercise == null) {
                 TextGenerator(
                     "Loading exercise...",
@@ -190,108 +197,273 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                 return@Column
             }
 
-            TextGenerator(
-                "Exercise ${currentExerciseIndex + 1}: ${exercise.name}",
-                MaterialTheme.colorScheme.onBackground,
-                "subtitle"
-            )
 
-            setDataSet.forEachIndexed { index, set ->
+        }
 
-                TextGenerator(
-                    "Set ${index + 1}",
-                    MaterialTheme.colorScheme.onBackground,
-                    "small"
-                )
+        ConstraintLayout(modifier = Modifier.fillMaxSize()) {
+            val (columnPrevious, columnNow) = createRefs()
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
+                    .constrainAs(columnPrevious) {
+                        top.linkTo(parent.top)
+                    }
+            ) {
+                if (exercise == null) {
+                    TextGenerator(
+                        "Loading exercise...",
+                        MaterialTheme.colorScheme.onBackground,
+                        "small"
+                    )
+                    return@Column
+                }
 
-                    OutlinedTextFieldGenerator(
-                        set.reps,
-                        {
-                            setDataSet[index] =
-                                set.copy(reps = it)
-                        },
-                        "Reps",
-                        false,
-                        KeyboardType.Number,
-                        modifier = Modifier.weight(1f)
+                val match = listPreviousWorkout.find {
+                    it.exercise_id == exercise.id
+                }
+
+                if (match != null) {
+
+                    TextGenerator(
+                        "Your previous workout:",
+                        MaterialTheme.colorScheme.onBackground,
+                        "body"
                     )
 
-                    OutlinedTextFieldGenerator(
-                        set.weight,
-                        {
-                            setDataSet[index] =
-                                set.copy(weight = it)
-                        },
-                        "Weight",
-                        false,
-                        KeyboardType.Number,
-                        modifier = Modifier.weight(1f)
+                    val formattedDate = runCatching {
+                        OffsetDateTime
+                            .parse(match.created_at)
+                            .format(DateTimeFormatter.ofPattern("dd.MM"))
+                    }.getOrNull() ?: "-"
+
+                    TextGenerator(formattedDate, MaterialTheme.colorScheme.onBackground, "small")
+
+                    if (exercise.sets_count in 6..10){
+
+                        val columns = ceil(exercise.sets_count.toDouble() / 2).toInt()
+                        var i = 0
+                        Row(Modifier.fillMaxWidth()) {
+                            for (c in 0 until 2){
+                                Column(modifier = Modifier.weight(1f)) {
+                                    for (b in 0 until columns){
+
+                                        val matchExercise = listPreviousWorkout.find{
+                                            it.exercise_id == exercise.id && it.set_number == i + 1
+                                        }
+                                        i += 1
+
+                                        if (matchExercise == null) continue
+
+                                        TextGenerator(
+                                            "Set ${i + 1}: ${matchExercise?.reps} x ${matchExercise?.weight} kg",
+                                            MaterialTheme.colorScheme.onBackground,
+                                            "ultrasmall"
+                                        )
+                                    }
+                                }
+
+                            }
+                        }
+
+
+                    }else if (exercise.sets_count > 10) {
+
+                        val columns = ceil(exercise.sets_count.toDouble() / 3).toInt()
+                        var i = 0
+                        Row(Modifier.fillMaxWidth()) {
+                            for (c in 0 until 3){
+                                Column(modifier = Modifier.weight(1f)) {
+                                    for (b in 0 until columns){
+
+                                        val matchExercise = listPreviousWorkout.find{
+                                            it.exercise_id == exercise.id && it.set_number == i + 1
+                                        }
+                                        i += 1
+
+                                        if (matchExercise == null) continue
+
+                                        TextGenerator(
+                                            "Set ${i + 1}: ${matchExercise?.reps} x ${matchExercise?.weight} kg",
+                                            MaterialTheme.colorScheme.onBackground,
+                                            "ultrasmall"
+                                        )
+                                    }
+                                }
+
+                            }
+                        }
+
+                    }else{
+                        for (i in 0 until exercise.sets_count) {
+                            val matchExercise = listPreviousWorkout.find{
+                                it.exercise_id == exercise.id && it.set_number == i + 1
+                            }
+
+                            Toast.makeText(context, matchExercise.toString(), Toast.LENGTH_SHORT).show()
+
+                            TextGenerator(
+                                "Set ${i + 1}: ${matchExercise?.reps} x ${matchExercise?.weight} kg",
+                                MaterialTheme.colorScheme.onBackground,
+                                "ultrasmall"
+                            )
+                        }
+                    }
+
+
+
+
+                } else {
+                    TextGenerator(
+                        "No previous workouts",
+                        MaterialTheme.colorScheme.onBackground,
+                        "ultrasmall"
                     )
                 }
             }
 
-            PrimaryButtonGenerator(
-                text = "Next",
-                onClick = {
-                    scope.launch {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
+                    .verticalScroll(rememberScrollState())
+                    .constrainAs(columnNow) {
+                        top.linkTo(columnPrevious.bottom)
+                    }
+            ) {
+                if (exercise == null) {
+                    TextGenerator(
+                        "Loading exercise...",
+                        MaterialTheme.colorScheme.onBackground,
+                        "small"
+                    )
+                    return@Column
+                }
 
-                        if (setDataSet.any { it.reps.isBlank() || it.weight.isBlank() }) {
-                            Toast.makeText(
-                                context,
-                                "Please fill all reps and weight fields",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            return@launch
-                        }
+                TextGenerator(
+                    "Exercise ${currentExerciseIndex + 1}: ${exercise.name}",
+                    MaterialTheme.colorScheme.onBackground,
+                    "subtitle"
+                )
 
-                        if (userId != null && workoutId != null) {
+                setDataSet.forEachIndexed { index, set ->
 
-                            viewModel.addExerciseToWorkout(
-                                userId,
-                                workoutId!!,
-                                exercise.id,
-                                setDataSet.toList(),
-                                exercise.sets_count
-                            )
+                    TextGenerator(
+                        "Set ${index + 1}",
+                        MaterialTheme.colorScheme.onBackground,
+                        "small"
+                    )
 
-                            Toast.makeText(
-                                context,
-                                "Exercise '${exercise.name}' saved",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
 
-                            if (currentExerciseIndex < listExercises.size - 1) {
-                                currentExerciseIndex++
-                            } else {
+                        OutlinedTextFieldGenerator(
+                            set.reps,
+                            {
+                                setDataSet[index] =
+                                    set.copy(reps = it)
+                            },
+                            "Reps",
+                            false,
+                            KeyboardType.Number,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        OutlinedTextFieldGenerator(
+                            set.weight,
+                            {
+                                setDataSet[index] =
+                                    set.copy(weight = it)
+                            },
+                            "Weight",
+                            false,
+                            KeyboardType.Number,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                PrimaryButtonGenerator(
+                    text = "Next",
+                    onClick = {
+                        scope.launch {
+
+                            if (setDataSet.any { it.reps.isBlank() || it.weight.isBlank() }) {
                                 Toast.makeText(
                                     context,
-                                    "Workout finished!",
-                                    Toast.LENGTH_LONG
+                                    "Please fill all reps and weight fields",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@launch
+                            }
+
+                            if (userId != null && workoutId != null) {
+
+                                viewModel.addExerciseToWorkout(
+                                    userId,
+                                    workoutId!!,
+                                    exercise.id,
+                                    setDataSet.toList(),
+                                    exercise.sets_count
+                                )
+
+                                Toast.makeText(
+                                    context,
+                                    "Exercise '${exercise.name}' saved",
+                                    Toast.LENGTH_SHORT
                                 ).show()
 
-                                exercisesColumn = false
-                                searchbarColumn = true
+                                if (currentExerciseIndex < listExercises.size - 1) {
+                                    currentExerciseIndex++
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        "Workout finished!",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+
+                                    exercisesColumn = false
+                                    searchbarColumn = true
+                                }
                             }
                         }
+
                     }
+                )
 
-                }
-            )
+                PrimaryButtonGenerator(
+                    text = "Back",
+                    onClick = {
+                        scope.launch {
 
-            PrimaryButtonGenerator(
-                text = "Back",
-                onClick = {
-                    exercisesColumn = false
-                    resultsColumn = true
-                }
-            )
+                            // ak už bol workout vytvorený → zmažeme ho
+                            if (workoutId != null) {
+                                viewModel.deleteWorkout(workoutId!!)
+                                workoutId = null
+                            }
+
+                            // reset UI stavu
+                            currentExerciseIndex = 0
+                            exercisesColumn = false
+                            resultsColumn = true
+                        }
+                    }
+                )
+            }
+
+
+
+
+
         }
     }
 }
@@ -302,4 +474,3 @@ data class SetData(
     val reps: String = "",
     val weight: String = ""
 )
-
