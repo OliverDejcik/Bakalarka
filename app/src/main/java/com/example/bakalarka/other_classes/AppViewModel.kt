@@ -14,6 +14,7 @@ import com.example.bakalarka.supabase.addExerciseToWorkoutDB
 import com.example.bakalarka.supabase.addTrainingDB
 import com.example.bakalarka.supabase.addUser
 import com.example.bakalarka.supabase.addWorkoutToDB
+import com.example.bakalarka.supabase.deleteTraining
 import com.example.bakalarka.supabase.deleteWorkoutDB
 import com.example.bakalarka.supabase.getExercisesByTrainingId
 import com.example.bakalarka.supabase.getLastWorkoutIdByTrainingIdAndDate
@@ -79,6 +80,7 @@ class AppViewModel : ViewModel() {
         userId: Int?,
         exerciseName: String,
         sets: String,
+        trainingNumOfExercises: Int = 1500,
         order: Int,
         onSuccess: (() -> Unit)? = null,
         onError: ((String) -> Unit)? = null
@@ -101,6 +103,7 @@ class AppViewModel : ViewModel() {
                     userId,
                     exerciseName,
                     setsInt,
+                    (trainingNumOfExercises+1),
                     order
                 )
                 onSuccess?.invoke()
@@ -124,12 +127,20 @@ class AppViewModel : ViewModel() {
 
     fun deleteExercise(
         exerciseId: Int,
-        trainingId: Int
+        trainingId: Int,
+        exercieseNum: Int
     ) {
         viewModelScope.launch {
-            removeExerciseById(exerciseId, trainingId)
+            removeExerciseById(exerciseId, trainingId, exercieseNum)
             loadExercisesByTrainingId(trainingId)
         }
+    }
+
+    fun deleteTrainingById(trainingId: Int){
+        viewModelScope.launch {
+            deleteTraining(trainingId)
+        }
+
     }
 
 

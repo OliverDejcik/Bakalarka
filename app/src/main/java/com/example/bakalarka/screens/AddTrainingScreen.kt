@@ -141,7 +141,7 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
                     if (exercise.isNotBlank() && sets.isNotBlank()) {
                         // Spustíme korutinu na pridanie cviku
 
-                            viewModel.addExercise(createdTrainingId, userId, exercise, sets, currentExerciseIndex)
+                            viewModel.addExercise(createdTrainingId, userId, exercise, sets, order = currentExerciseIndex)
 
                             if (currentExerciseIndex == totalExercises) {
                                 // Posledný cvik bol pridaný

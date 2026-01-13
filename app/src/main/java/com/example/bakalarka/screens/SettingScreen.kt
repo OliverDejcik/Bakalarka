@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -69,6 +71,8 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
 
     var addExercise by remember { mutableStateOf(false) }
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
     val scope = rememberCoroutineScope()
 
     var newExerciseName by remember { mutableStateOf("") }
@@ -114,7 +118,37 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                         isTrainingSelected = true
                     }, modifier = Modifier.weight(0.7f))
 
-                    SettingsButtonGenerator("Delete", onClick = { /*popup na potvrdenie vymazania*/ }, modifier = Modifier.weight(0.8f))
+                    SettingsButtonGenerator(
+                        "Delete",
+                        onClick = { showDeleteDialog = true
+                            selectedTrainingId = training.id
+                                  },
+                        modifier = Modifier.weight(0.8f)
+                    )
+
+                    if (showDeleteDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showDeleteDialog = false },
+                            title = { Text("Are you sure?") },
+                            text = { Text("Do you really want to delete this item?") },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    viewModel.deleteTrainingById(selectedTrainingId)
+                                    showDeleteDialog = false
+                                    selectedTrainingId = 0
+                                    isTrainingSelected = false
+                                    viewModel.loadTrainingsByUserId(userId!!)
+                                }) {
+                                    Text("Yes")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDeleteDialog = false }) {
+                                    Text("No")
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }else{
@@ -246,14 +280,37 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
 
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
                         SettingsButtonGenerator("Delete", onClick = {
-                            viewModel.deleteExercise(
-                                exercise.id,
-                                selectedTrainingId
-                            )
-
-                            Toast.makeText(context, "Exercise deleted", Toast.LENGTH_SHORT).show()
+                            showDeleteDialog = true
                         })
 
+                    }
+
+                    if (showDeleteDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showDeleteDialog = false },
+                            title = { Text("Are you sure?") },
+                            text = { Text("Do you really want to delete this item?") },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    viewModel.deleteExercise(
+                                        exercise.id,
+                                        selectedTrainingId,
+                                        listExercises.size
+                                    )
+                                    showDeleteDialog = false
+                                    selectedTrainingId = 0
+                                    isTrainingSelected = false
+                                    viewModel.loadTrainingsByUserId(userId!!)
+                                }) {
+                                    Text("Yes")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDeleteDialog = false }) {
+                                    Text("No")
+                                }
+                            }
+                        )
                     }
                 }
             }
@@ -276,6 +333,7 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                             userId,
                             newExerciseName,
                             newReps,
+                            listExercises.size,
                             order,
                             onSuccess = {
                                 viewModel.loadExercisesByTrainingId(selectedTrainingId)

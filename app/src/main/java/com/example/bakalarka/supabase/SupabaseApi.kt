@@ -125,6 +125,7 @@ suspend fun addExerciseDB(
     userId: Int,
     name: String,
     sets: Int,
+    trainingNumOfExercises: Int,
     orderIndex: Int
 ) {
     return withContext(Dispatchers.IO) {
@@ -140,6 +141,20 @@ suspend fun addExerciseDB(
         supabase
             .from("exercises")
             .insert(insertData)
+        if (trainingNumOfExercises != 1501) {
+            supabase
+                .from("trainings")
+                .update(
+                    buildJsonObject {
+                        put("number_of_exercises", trainingNumOfExercises)
+                    }
+                ) {
+                    filter {
+                        eq("id", trainingId)
+                    }
+                }
+        }
+
     }
 }
 
@@ -296,7 +311,7 @@ suspend fun updateTrainingName(
         }
 }
 
-suspend fun removeExerciseById(exerciseId: Int, trainingId: Int){
+suspend fun removeExerciseById(exerciseId: Int, trainingId: Int, exercise_num: Int){
     supabase
         .from("exercises")
         .delete {
@@ -309,7 +324,7 @@ suspend fun removeExerciseById(exerciseId: Int, trainingId: Int){
         .from("trainings")
         .update(
             buildJsonObject {
-                put("number_of_exercises", -1)
+                put("number_of_exercises", (exercise_num-1))
             }
         ){
             filter {
@@ -317,6 +332,23 @@ suspend fun removeExerciseById(exerciseId: Int, trainingId: Int){
             }
         }
 
+}
+
+suspend fun deleteTraining(trainingId: Int) {
+    supabase.from("workouts")
+        .delete {
+            filter {
+                eq("training_id", trainingId)
+
+            }
+        }
+
+    supabase.from("trainings")
+        .delete {
+            filter {
+                eq("id", trainingId)
+            }
+        }
 }
 
 suspend fun getLastWorkoutbyWorkoutId(workoutId: Int): List<WorkoutExercise> {
