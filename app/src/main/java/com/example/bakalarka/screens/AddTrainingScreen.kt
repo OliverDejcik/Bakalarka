@@ -38,6 +38,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
 
+    // --- STATES ---
     var trainingName by remember { mutableStateOf("") }
     var trainingNumber by remember { mutableStateOf("") }
 
@@ -48,24 +49,24 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
     var isFormVisible by remember { mutableStateOf(true) }
     var isExerciseFormVisible by remember { mutableStateOf(false) }
 
-    // --- OPRAVENÁ A DOPLNENÁ ČASŤ ---
+    var createdTrainingId by remember { mutableStateOf<Int?>(null) }
+
+    // --- CONTEXT ---
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-
-    // Získavame userId bezpečne, bez `!!`, aby aplikácia nespadla
     val userId = CurrentUserHolder.currentUser?.id
-
-    // Tento stav bude držať ID tréningu, až keď ho reálne dostaneme z databázy
-    var createdTrainingId by remember { mutableStateOf<Int?>(null) }
-    // --- KONIEC OPRAVENEJ ČASTI ---
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.background),
+            .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+
+        /* ===========================
+           CREATE TRAINING FORM
+        ============================ */
         if (isFormVisible) {
             Column(
                 modifier = Modifier
@@ -73,42 +74,69 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
                     .padding(bottom = (15.dp * ElementSizeProvider.getScale())),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TextGenerator("Create new training", MaterialTheme.colorScheme.onBackground, "title")
 
-                OutlinedTextFieldGenerator(trainingName, { trainingName = it }, "Training Name")
-                OutlinedTextFieldGenerator(trainingNumber, { trainingNumber = it }, "Number of exercises", false, KeyboardType.Number)
+                TextGenerator(
+                    "Create new training",
+                    MaterialTheme.colorScheme.onBackground,
+                    "title"
+                )
 
-                PrimaryButtonGenerator("Construct training", onClick = {
-                    val number = trainingNumber.toIntOrNull()
-                    if (trainingName.isNotBlank() && number != null && number > 0) {
-                        if (userId == null) {
-                            Toast.makeText(context, "Error: User not logged in.", Toast.LENGTH_SHORT).show()
+                OutlinedTextFieldGenerator(
+                    trainingName,
+                    { trainingName = it },
+                    "Training Name"
+                )
+
+                OutlinedTextFieldGenerator(
+                    trainingNumber,
+                    { trainingNumber = it },
+                    "Number of exercises",
+                    false,
+                    KeyboardType.Number
+                )
+
+                PrimaryButtonGenerator(
+                    "Construct training",
+                    onClick = {
+                        val number = trainingNumber.toIntOrNull()
+
+                        if (trainingName.isBlank() || number == null || number <= 0) {
+                            Toast.makeText(
+                                context,
+                                "Name and a valid number of exercises are required",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             return@PrimaryButtonGenerator
                         }
 
-                        // Spustíme korutinu, ktorá počká na výsledok
-                        scope.launch {
-                            // Zavoláme `suspend` funkciu a počkáme na jej výsledok (ID)
+                        if (userId == null) {
                             Toast.makeText(
                                 context,
-                                "training name:"+trainingName+" number:"+number+" userId:"+userId,
+                                "Error: User not logged in.",
                                 Toast.LENGTH_SHORT
                             ).show()
-                            val newId = viewModel.addTraining(trainingName, number, userId)
+                            return@PrimaryButtonGenerator
+                        }
+
+                        scope.launch {
+                            val newId = viewModel.addTraining(
+                                trainingName,
+                                number,
+                                userId
+                            )
 
                             if (newId != null) {
-                                // Ak sme úspešne získali ID...
-                                createdTrainingId = newId // ...uložíme ho do nášho stavu
+                                createdTrainingId = newId
+                                currentExerciseIndex = 1
                                 isFormVisible = false
                                 isExerciseFormVisible = true
-                                currentExerciseIndex = 1 // Začíname prvým cvikom
+
                                 Toast.makeText(
                                     context,
                                     "Training created. Now add exercises.",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             } else {
-                                // Ak nastala chyba pri vytváraní tréningu
                                 Toast.makeText(
                                     context,
                                     "Failed to create training.",
@@ -116,61 +144,104 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
                                 ).show()
                             }
                         }
-                    } else {
-                        Toast.makeText(context, "Name and a valid number of exercises are required", Toast.LENGTH_SHORT).show()
                     }
-                })
+                )
             }
-        } else if (isExerciseFormVisible) {
+        }
+
+        /* ===========================
+           ADD EXERCISES FORM
+        ============================ */
+        else if (isExerciseFormVisible) {
+
             val totalExercises = trainingNumber.toIntOrNull() ?: 0
+            val buttonText =
+                if (currentExerciseIndex == totalExercises)
+                    "Finish Training"
+                else
+                    "Add Exercise"
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = (15.dp * ElementSizeProvider.getScale())),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TextGenerator("Add Exercise $currentExerciseIndex / $totalExercises", MaterialTheme.colorScheme.onBackground, "title")
 
-                OutlinedTextFieldGenerator(exercise, { exercise = it }, "Name of $currentExerciseIndex. exercise")
-                OutlinedTextFieldGenerator(sets, { sets = it }, "Number of sets", false, KeyboardType.Number)
+                TextGenerator(
+                    "Add Exercise $currentExerciseIndex / $totalExercises",
+                    MaterialTheme.colorScheme.onBackground,
+                    "title"
+                )
 
-                // Zmeníme text tlačidla, ak ide o posledný cvik
-                val buttonText = if (currentExerciseIndex == totalExercises) "Finish Training" else "Add Exercise"
+                OutlinedTextFieldGenerator(
+                    exercise,
+                    { exercise = it },
+                    "Name of $currentExerciseIndex. exercise"
+                )
 
-                PrimaryButtonGenerator(buttonText, onClick = {
-                    if (exercise.isNotBlank() && sets.isNotBlank()) {
-                        // Spustíme korutinu na pridanie cviku
+                OutlinedTextFieldGenerator(
+                    sets,
+                    { sets = it },
+                    "Number of sets",
+                    false,
+                    KeyboardType.Number
+                )
 
-                            viewModel.addExercise(createdTrainingId, userId, exercise, sets, order = currentExerciseIndex)
+                PrimaryButtonGenerator(
+                    buttonText,
+                    onClick = {
+                        if (exercise.isBlank() || sets.isBlank()) {
+                            Toast.makeText(
+                                context,
+                                "Name and number of sets are required",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@PrimaryButtonGenerator
+                        }
 
-                            if (currentExerciseIndex == totalExercises) {
-                                // Posledný cvik bol pridaný
-                                Toast.makeText(context, "Training successfully created!", Toast.LENGTH_LONG).show()
+                        viewModel.addExercise(
+                            createdTrainingId,
+                            userId,
+                            exercise,
+                            sets,
+                            order = currentExerciseIndex
+                        )
 
-                                // Resetujeme celý formulár do pôvodného stavu
-                                exercise = ""
-                                sets = ""
-                                trainingName = ""
-                                trainingNumber = ""
-                                currentExerciseIndex = 0
-                                createdTrainingId = null // Dôležité: vynulujeme ID
-                                isExerciseFormVisible = false
-                                isFormVisible = true
-                            } else {
-                                // Pokračujeme ďalším cvikom
-                                Toast.makeText(context, "Exercise added: $exercise", Toast.LENGTH_SHORT).show()
-                                exercise = ""
-                                sets = ""
-                                currentExerciseIndex++
-                            }
+                        if (currentExerciseIndex == totalExercises) {
+                            Toast.makeText(
+                                context,
+                                "Training successfully created!",
+                                Toast.LENGTH_LONG
+                            ).show()
 
-                    } else {
-                        Toast.makeText(context, "Name and number of sets are required", Toast.LENGTH_SHORT).show()
+                            trainingName = ""
+                            trainingNumber = ""
+                            exercise = ""
+                            sets = ""
+                            currentExerciseIndex = 0
+                            createdTrainingId = null
+                            isExerciseFormVisible = false
+                            isFormVisible = true
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Exercise added: $exercise",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            exercise = ""
+                            sets = ""
+                            currentExerciseIndex++
+                        }
                     }
-                })
+                )
             }
         }
 
+        /* ===========================
+           FOOTER
+        ============================ */
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
@@ -181,7 +252,23 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
                 TextGenerator("Need help?", MaterialTheme.colorScheme.onBackground, "small")
             }
             Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                SecondaryButtonGenerator(text = "Help", onClick = { /*Tu si dam presmerovanie na napovedu*/ })
+
+                SecondaryButtonGenerator(
+                    text = "Back",
+                    onClick = {
+                        scope.launch {
+
+                            if (createdTrainingId != null) {
+                                viewModel.deleteTrainingById(createdTrainingId!!)
+                                createdTrainingId = null
+                            }
+
+                            currentExerciseIndex = 0
+                        }
+                    }
+                )
+
+
             }
             Box(modifier = Modifier.weight(0.7f))
         }

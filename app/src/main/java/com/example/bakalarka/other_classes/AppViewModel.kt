@@ -74,7 +74,7 @@ class AppViewModel : ViewModel() {
         return deferredTrainingId.await()
     }
 
-
+//rozdelit toto aby mi to pri vytvarani treningu volalo osobytnu funkciu
     fun addExercise(
         trainingId: Int?,
         userId: Int?,
@@ -402,5 +402,7 @@ class AppViewModel : ViewModel() {
     }
 
     fun pxToDp(px: Int): Float = px / density
+
+    fun spToPx(sp: Float): Float = sp * density
 }
 

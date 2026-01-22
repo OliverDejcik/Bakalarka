@@ -2,6 +2,7 @@ package com.example.bakalarka.other_classes
 
 // Android
 import android.graphics.Color
+import androidx.compose.foundation.border
 import androidx.compose.ui.viewinterop.AndroidView
 
 // Compose – layout & runtime
@@ -15,12 +16,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.bakalarka.other_classes.ElementSizeProvider.getSize
 
 // App
 
@@ -54,8 +58,8 @@ fun SecondaryButtonGenerator(text: String,   onClick: () -> Unit, modifier: Modi
 }
 
 @Composable
-fun SettingsButtonGenerator(text: String,   onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Button(onClick = {onClick()},modifier = modifier,colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary), shape = RoundedCornerShape(35)){
+fun SettingsButtonGenerator(text: String,   onClick: () -> Unit, modifier: Modifier = Modifier.fillMaxWidth().border(width = 1.dp, color = MaterialTheme.colorScheme.onSecondary)) {
+    Button(onClick = {onClick()},modifier = modifier,colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary), contentPadding = PaddingValues(), shape = RoundedCornerShape(0)){
         TextGenerator(text, MaterialTheme.colorScheme.onSecondary, "ultrasmall",false)
     }
 }
@@ -88,12 +92,14 @@ fun OutlinedTextFieldGenerator(
     isPassword: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
     leadingIcon: ImageVector? = null,
+    textType: String = "label",
     modifier: Modifier = Modifier
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(label) },
+        label = { TextGenerator(label, MaterialTheme.colorScheme.onBackground, textType,false) },
+        textStyle = TextStyle(fontSize = getSize(name = textType).value.sp),
         leadingIcon = leadingIcon?.let { icon ->
             { Icon(imageVector = icon, contentDescription = null) }
         },

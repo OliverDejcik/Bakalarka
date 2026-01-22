@@ -1,6 +1,8 @@
 package com.example.bakalarka.other_classes
 
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bakalarka.other_classes.AppViewModel
 
@@ -8,6 +10,14 @@ import com.example.bakalarka.other_classes.AppViewModel
 object ElementSizeProvider {
 
     val viewModel = AppViewModel()
+
+    fun getSizeForElement(name: String): Dp {
+        val sizeSp = getSize(name)              // TextUnit (sp)
+        val sizePx = viewModel.spToPx(sizeSp.value) // Float (px)
+        val sizeDp = viewModel.pxToDp(sizePx.toInt())       // Float (dp)
+
+        return (sizeDp * 3).dp
+    }
 
 
     fun getSize(name: String): TextUnit {
