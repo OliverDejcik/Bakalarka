@@ -1,7 +1,5 @@
 package com.example.bakalarka.screens
 
-import android.R.attr.bottom
-import android.R.attr.top
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,18 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bakalarka.other_classes.*
 import com.example.bakalarka.supabase.CurrentUserHolder
-import kotlinx.coroutines.NonDisposableHandle.parent
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
-import java.time.temporal.TemporalQueries.localDate
 import kotlin.math.ceil
 
 @Composable
@@ -128,10 +121,6 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
 
                         scope.launch {
 
-
-
-
-
                             val newWorkoutId = viewModel.addWorkout(userId, training.id)
                             if (newWorkoutId == null) {
                                 Toast.makeText(context, "Failed to start workout", Toast.LENGTH_SHORT).show()
@@ -143,18 +132,15 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                             viewModel.loadpreviousWorkout(training.id)
                             viewModel.loadExercisesByTrainingId(training.id)
 
-                            // 3️⃣ počkaj na to, kým sa exercises objavia
                             snapshotFlow { listExercises }
                                 .first { it.isNotEmpty() }
 
-                            // 4️⃣ UI je READY → prepni obrazovku
                             currentExerciseIndex = 0
                             resultsColumn = false
                             exercisesColumn = true
                         }
                     }
                 )
-
             }
 
             PrimaryButtonGenerator(
@@ -187,32 +173,21 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
             }
         }
 
-        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            if (exercise == null) {
-                TextGenerator(
-                    "Loading exercise...",
-                    MaterialTheme.colorScheme.onBackground,
-                    "small"
-                )
-                return@Column
-            }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
 
-
-        }
-
-        ConstraintLayout(modifier = Modifier.fillMaxSize()) {
-            val (columnPrevious, columnNow) = createRefs()
+            /* ===== PREVIOUS WORKOUT ===== */
 
             Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.background)
-                    .constrainAs(columnPrevious) {
-                        top.linkTo(parent.top)
-                    }
+                    .wrapContentHeight(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
                 if (exercise == null) {
                     TextGenerator(
                         "Loading exercise...",
@@ -242,79 +217,70 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
 
                     TextGenerator(formattedDate, MaterialTheme.colorScheme.onBackground, "small")
 
-                    if (exercise.sets_count in 6..10){
+
+                    if (exercise.sets_count in 6..10) {
 
                         val columns = ceil(exercise.sets_count.toDouble() / 2).toInt()
                         var i = 0
                         Row(Modifier.fillMaxWidth()) {
-                            for (c in 0 until 2){
+                            repeat(2) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    for (b in 0 until columns){
-
-                                        val matchExercise = listPreviousWorkout.find{
+                                    repeat(columns) {
+                                        val matchExercise = listPreviousWorkout.find {
                                             it.exercise_id == exercise.id && it.set_number == i + 1
                                         }
-                                        i += 1
-
-                                        if (matchExercise == null) continue
-
-                                        TextGenerator(
-                                            "Set ${i + 1}: ${matchExercise?.reps} x ${matchExercise?.weight} kg",
-                                            MaterialTheme.colorScheme.onBackground,
-                                            "ultrasmall"
-                                        )
+                                        i++
+                                        if (matchExercise != null) {
+                                            TextGenerator(
+                                                "Set $i: ${matchExercise.reps} x ${matchExercise.weight} kg",
+                                                MaterialTheme.colorScheme.onBackground,
+                                                "ultrasmall"
+                                            )
+                                        }
                                     }
                                 }
-
                             }
                         }
 
-
-                    }else if (exercise.sets_count > 10) {
+                    } else if (exercise.sets_count > 11) {
 
                         val columns = ceil(exercise.sets_count.toDouble() / 3).toInt()
                         var i = 0
                         Row(Modifier.fillMaxWidth()) {
-                            for (c in 0 until 3){
+                            repeat(3) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    for (b in 0 until columns){
-
-                                        val matchExercise = listPreviousWorkout.find{
+                                    repeat(columns) {
+                                        val matchExercise = listPreviousWorkout.find {
                                             it.exercise_id == exercise.id && it.set_number == i + 1
                                         }
-                                        i += 1
-
-                                        if (matchExercise == null) continue
-
-                                        TextGenerator(
-                                            "Set ${i + 1}: ${matchExercise?.reps} x ${matchExercise?.weight} kg",
-                                            MaterialTheme.colorScheme.onBackground,
-                                            "ultrasmall"
-                                        )
+                                        i++
+                                        if (matchExercise != null) {
+                                            TextGenerator(
+                                                "Set $i: ${matchExercise.reps} x ${matchExercise.weight} kg",
+                                                MaterialTheme.colorScheme.onBackground,
+                                                "ultrasmall"
+                                            )
+                                        }
                                     }
                                 }
-
                             }
                         }
 
-                    }else{
+                    } else if(exercise.sets_count in 1..5){
                         for (i in 0 until exercise.sets_count) {
-                            val matchExercise = listPreviousWorkout.find{
+                            val matchExercise = listPreviousWorkout.find {
                                 it.exercise_id == exercise.id && it.set_number == i + 1
                             }
 
-                            Toast.makeText(context, matchExercise.toString(), Toast.LENGTH_SHORT).show()
-
-                            TextGenerator(
-                                "Set ${i + 1}: ${matchExercise?.reps} x ${matchExercise?.weight} kg",
-                                MaterialTheme.colorScheme.onBackground,
-                                "ultrasmall"
-                            )
+                            if (matchExercise != null) {
+                                TextGenerator(
+                                    "Set ${i + 1}: ${matchExercise?.reps} x ${matchExercise?.weight} kg",
+                                    MaterialTheme.colorScheme.onBackground,
+                                    "ultrasmall"
+                                )
+                            }
                         }
                     }
-
-
-
 
                 } else {
                     TextGenerator(
@@ -325,17 +291,16 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                 }
             }
 
+            /* ===== CURRENT EXERCISE ===== */
+
             Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.background)
-                    .verticalScroll(rememberScrollState())
-                    .constrainAs(columnNow) {
-                        top.linkTo(columnPrevious.bottom)
-                    }
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
                 if (exercise == null) {
                     TextGenerator(
                         "Loading exercise...",
@@ -436,7 +401,6 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                                 }
                             }
                         }
-
                     }
                 )
 
@@ -445,13 +409,11 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                     onClick = {
                         scope.launch {
 
-                            // ak už bol workout vytvorený → zmažeme ho
-                            if (workoutId != null) {
-                                viewModel.deleteWorkout(workoutId!!)
+                            workoutId?.let { id ->
+                                viewModel.deleteWorkout(id) // počká, kým sa vymaže z DB
                                 workoutId = null
                             }
 
-                            // reset UI stavu
                             currentExerciseIndex = 0
                             exercisesColumn = false
                             resultsColumn = true
@@ -459,11 +421,6 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                     }
                 )
             }
-
-
-
-
-
         }
     }
 }
