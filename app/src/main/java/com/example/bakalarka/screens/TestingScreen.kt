@@ -3,8 +3,10 @@ package com.example.bakalarka.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -209,17 +211,24 @@ fun SettingScreenDesignOnly() {
     }
 }
 */
+/*
 @Composable
 fun SettingScreenDesignOnly() {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
+
+        TrainingHeader()
+
+        TrainingDefaultRowStyled("push day", {})
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         ExerciseHeader()
 
-        Spacer(modifier = Modifier.height(8.dp))
 
         repeat(3) {
             ExerciseRowStyled(
@@ -237,13 +246,78 @@ fun SettingScreenDesignOnly() {
         PrimaryButtonGenerator("Back", onClick = {})
     }
 }
+@Composable
+fun TrainingHeader(){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, MaterialTheme.colorScheme.onBackground)
+    ) {
+        HeaderCell("Training name", 1f)
+        Spacer(modifier = Modifier.weight(1f))
+    }
+}
+
+@Composable
+fun TrainingDefaultRowStyled(
+    training: String,
+    onEdit: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(getSizeForElement("ultrasmall"))
+            .border(1.dp, MaterialTheme.colorScheme.onBackground),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        InputCell(training, 1f)
+
+        ActionButton(
+            text = "Edit",
+            modifier = Modifier.weight(1f),
+            onClick = onEdit
+        )
+
+    }
+}
+
+@Composable
+fun TrainingEditRowStyled(
+    training: String,
+    onUpdate: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(getSizeForElement("ultrasmall"))
+            .border(1.dp, MaterialTheme.colorScheme.onBackground),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        InputCell(training, 1f)
+
+        ActionButton(
+            text = "Edit",
+            modifier = Modifier.weight(0.75f),
+            onClick = onUpdate
+        )
+        ActionButton(
+            text = "Edit",
+            modifier = Modifier.weight(0.75f),
+            onClick = onDelete
+        )
+
+    }
+}
 
 @Composable
 fun ExerciseHeader() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, MaterialTheme.colorScheme.outline)
+            .border(1.dp, MaterialTheme.colorScheme.onBackground)
     ) {
         HeaderCell("Exercise", 1.5f)
         HeaderCell("Reps", 0.5f)
@@ -311,7 +385,7 @@ fun AddExerciseCard() {
             .padding(top = 24.dp)
             .border(
                 1.dp,
-                MaterialTheme.colorScheme.outline,
+                MaterialTheme.colorScheme.onBackground,
                 shape = MaterialTheme.shapes.medium
             )
             .padding(16.dp),
@@ -365,27 +439,6 @@ private fun RowScope.HeaderCell(text: String, weight: Float) {
 }
 
 @Composable
-private fun ExerciseRow() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        InputCell("Bench Press", 1.5f)
-
-        InputCell("10", 0.5f, KeyboardType.Number)
-
-        Box(modifier = Modifier.weight(0.75f)) {
-            SettingsButtonGenerator("Update", {})
-        }
-
-        Box(modifier = Modifier.weight(0.75f)) {
-            SettingsButtonGenerator("Delete", {})
-        }
-    }
-}
-
-@Composable
 private fun RowScope.InputCell(
     value: String,
     weight: Float,
@@ -412,12 +465,12 @@ private fun RowScope.InputCell(
         )
     }
 }
-
+*/
 
 
 
 @Preview(showBackground = true)
 @Composable
 fun SettingScreenDesignPreview() {
-    SettingScreenDesignOnly()
+   // SettingScreenDesignOnly()
 }

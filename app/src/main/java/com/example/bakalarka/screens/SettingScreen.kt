@@ -4,6 +4,10 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -12,11 +16,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bakalarka.other_classes.*
+import com.example.bakalarka.other_classes.ElementSizeProvider.getSize
+import com.example.bakalarka.other_classes.ElementSizeProvider.getSizeForElement
 import com.example.bakalarka.supabase.CurrentUserHolder
 import com.example.bakalarka.supabase.updateTrainingName
 import kotlinx.coroutines.launch
@@ -58,9 +67,7 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
         }
     }
 
-    /* =========================
-       ROOT LAYOUT
-    ========================== */
+
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -68,6 +75,7 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
         modifier = Modifier
             .background(MaterialTheme.colorScheme.background)
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
 
         Text(
@@ -77,59 +85,29 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
             modifier = Modifier.padding(bottom = 3.dp)
         )
 
-        /* ============================================================
-           TRAINING LIST
-        ============================================================ */
 
         if (!isTrainingSelected) {
 
-            Row(
-                modifier = Modifier
-                    .padding(bottom = 3.dp)
-                    .fillMaxWidth()
-                    .border(1.dp, MaterialTheme.colorScheme.onBackground)
-            ) {
-                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                    TextGenerator("Training Name", MaterialTheme.colorScheme.onBackground, "body", true)
-                }
-                Box(modifier = Modifier.weight(1f))
-            }
+            TrainingHeader()
 
             for (training in listTrainings) {
 
-                Row(modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.onBackground)) {
-
-                    Box(modifier = Modifier.weight(1.5f), contentAlignment = Alignment.Center) {
-                        TextGenerator(training.name, MaterialTheme.colorScheme.onBackground, "body", true)
-                    }
-
-                    SettingsButtonGenerator(
-                        "Edit",
-                        onClick = {
+                TrainingDefaultRowStyled(
+                    training = training.name, onEdit =
+                        {
                             selectedTrainingId = training.id
                             viewModel.loadExercisesByTrainingId(training.id)
                             isTrainingSelected = true
                         },
-                        modifier = Modifier.weight(0.7f)
-                    )
+                    onValueChange = {}
+                )
 
-                    SettingsButtonGenerator(
-                        "Delete",
-                        onClick = {
-                            selectedTrainingId = training.id
-                            showDeleteDialog = true
-                        },
-                        modifier = Modifier.weight(0.8f)
-                    )
-                }
             }
         }
 
-        /* ============================================================
-           TRAINING DETAIL
-        ============================================================ */
-
         else {
+
+            TrainingHeader()
 
             for (training in listTrainings) {
                 if (training.id == selectedTrainingId) {
@@ -138,69 +116,29 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                         mutableStateOf(training.name)
                     }
 
-                    Row(
-                        modifier = Modifier
-                            .padding(bottom = 3.dp)
-                            .fillMaxWidth()
-                            .border(1.dp, MaterialTheme.colorScheme.onBackground)
-                    ) {
-                        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                            TextGenerator("Training Name", MaterialTheme.colorScheme.onBackground, "body", true)
-                        }
-                        Box(modifier = Modifier.weight(1f))
-                    }
+                    TrainingEditRowStyled(
+                        training = editedTrainingName,
+                        onUpdate = {
+                            scope.launch {
+                                updateTrainingName(training.id, editedTrainingName)
+                                viewModel.loadTrainingsByUserId(userId!!)
+                                isTrainingSelected = false
+                            }
 
-                    Row {
+                            Toast.makeText(context, "Training updated", Toast.LENGTH_SHORT).show()
+                        },
+                        onDelete = {
+                            selectedTrainingId = training.id
+                            showDeleteDialog = true
+                        },
+                        onValueChange = {editedTrainingName = it}
+                    )
 
-                        Box(modifier = Modifier.weight(1.5f), contentAlignment = Alignment.Center) {
-                            OutlinedTextFieldGenerator(
-                                value = editedTrainingName,
-                                onValueChange = { editedTrainingName = it },
-                                label = "",
-                                false
-                            )
-                        }
-
-                        Box(modifier = Modifier.weight(0.7f), contentAlignment = Alignment.Center) {
-                            SettingsButtonGenerator(
-                                "Update",
-                                onClick = {
-                                    scope.launch {
-                                        updateTrainingName(training.id, editedTrainingName)
-                                        viewModel.loadTrainingsByUserId(userId!!)
-                                        isTrainingSelected = false
-                                    }
-
-                                    Toast.makeText(context, "Training updated", Toast.LENGTH_SHORT).show()
-                                }
-                            )
-                        }
-                    }
                 }
             }
+            Spacer(modifier = Modifier.height(12.dp))
+            ExerciseHeader()
 
-            /* =========================
-               EXERCISES HEADER
-            ========================== */
-
-            Row(
-                modifier = Modifier
-                    .padding(bottom = 3.dp)
-                    .fillMaxWidth()
-                    .border(1.dp, MaterialTheme.colorScheme.onBackground,shape = MaterialTheme.shapes.medium)
-            ) {
-                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                    TextGenerator("Exercise name", MaterialTheme.colorScheme.onBackground, "body", true)
-                }
-                Box(modifier = Modifier.weight(0.5f), contentAlignment = Alignment.Center) {
-                    TextGenerator("Reps", MaterialTheme.colorScheme.onBackground, "body", true)
-                }
-                Box(modifier = Modifier.weight(1.5f))
-            }
-
-            /* =========================
-               EXERCISES LIST
-            ========================== */
 
             for (exercise in listExercises) {
 
@@ -212,71 +150,52 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                     mutableStateOf(exercise.sets_count.toString())
                 }
 
-                Row {
+                ExerciseRowStyled(exercise = editedExerciseName,
+                    onExerciseChange = {editedExerciseName = it},
+                    onRepsChange = {editedReps = it},
+                    reps = editedReps,
+                    onUpdate = {
 
-                    Box(modifier = Modifier.weight(1.5f), contentAlignment = Alignment.Center) {
-                        OutlinedTextFieldGenerator(
-                            value = editedExerciseName,
-                            onValueChange = { editedExerciseName = it },
-                            label = "",
-                            false
+                        val reps = editedReps.toIntOrNull()
+                        if (reps == null) {
+                            Toast.makeText(context, "Sets must be a number", Toast.LENGTH_SHORT).show()
+                            return@ExerciseRowStyled
+                        }
+
+                        viewModel.updateExercise(
+                            exercise.id,
+                            editedExerciseName,
+                            reps,
+                            selectedTrainingId
                         )
-                    }
 
-                    Box(modifier = Modifier.weight(0.5f), contentAlignment = Alignment.Center) {
-                        OutlinedTextFieldGenerator(
-                            value = editedReps,
-                            onValueChange = { editedReps = it },
-                            label = "",
-                            false,
-                            keyboardType = KeyboardType.Number
+                        Toast.makeText(context, "Exercise updated", Toast.LENGTH_SHORT).show()
+                    },
+                    onDelete = {
+                        viewModel.deleteExercise(
+                            exercise.id,
+                            trainingId = selectedTrainingId,
+                            exercieseNum = exercise.order_index
                         )
+
+                        Toast.makeText(context, "Exercise deleted", Toast.LENGTH_SHORT).show()
                     }
+                )
 
-                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                        SettingsButtonGenerator("Update", onClick = {
-
-                            val reps = editedReps.toIntOrNull()
-                            if (reps == null) {
-                                Toast.makeText(context, "Reps must be a number", Toast.LENGTH_SHORT).show()
-                                return@SettingsButtonGenerator
-                            }
-
-                            viewModel.updateExercise(
-                                exercise.id,
-                                editedExerciseName,
-                                reps,
-                                selectedTrainingId
-                            )
-
-                            Toast.makeText(context, "Exercise updated", Toast.LENGTH_SHORT).show()
-                        })
-                    }
-
-                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                        SettingsButtonGenerator("Delete", onClick = {
-                            showDeleteDialog = true
-                        })
-                    }
-                }
             }
 
-            /* =========================
-               ADD EXERCISE
-            ========================== */
-
             Row {
-                SettingsButtonGenerator("Add exercise", onClick = {
+                SecondaryButtonGenerator("Add exercise", onClick = {
                     addExercise = true
                 })
             }
-
             if (addExercise) {
-                Column {
-                    OutlinedTextFieldGenerator(newExerciseName, { newExerciseName = it }, "Exercise name", false)
-                    OutlinedTextFieldGenerator(newReps, { newReps = it }, "Reps", false, keyboardType = KeyboardType.Number)
-
-                    SettingsButtonGenerator("Add exercise", onClick = {
+                Spacer(modifier = Modifier.height(12.dp))
+                AddExerciseCard(newExerciseName,
+                    {newExerciseName = it},
+                    newReps,
+                    {newReps = it},
+                    onAddExercse = {
                         val order = listExercises.size + 1
 
                         viewModel.addExercise(
@@ -296,8 +215,8 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                                 Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
                             }
                         )
-                    })
-                }
+                    }
+                )
             }
 
             PrimaryButtonGenerator("Back", onClick = {
@@ -305,10 +224,6 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
             })
         }
     }
-
-    /* =========================
-       DELETE DIALOG
-    ========================== */
 
     if (showDeleteDialog) {
         AlertDialog(
@@ -333,4 +248,243 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
             }
         )
     }
+}
+
+@Composable
+fun TrainingHeader(){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, MaterialTheme.colorScheme.onBackground)
+    ) {
+        HeaderCell("Training name", 1f)
+        Spacer(modifier = Modifier.weight(1f))
+    }
+}
+
+@Composable
+fun TrainingDefaultRowStyled(
+    training: String,
+    onValueChange: (String) -> Unit,
+    onEdit: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(getSizeForElement("ultrasmall"))
+            .border(1.dp, MaterialTheme.colorScheme.onBackground),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        InputCell(training, onValueChange, 1f)
+
+        ActionButton(
+            text = "Edit",
+            modifier = Modifier.weight(1f),
+            onClick = onEdit
+        )
+
+    }
+}
+
+@Composable
+fun TrainingEditRowStyled(
+    training: String,
+    onValueChange: (String) -> Unit,
+    onUpdate: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(getSizeForElement("ultrasmall"))
+            .border(1.dp, MaterialTheme.colorScheme.onBackground),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        InputCell(training, onValueChange,1f)
+
+        ActionButton(
+            text = "Update",
+            modifier = Modifier.weight(0.5f),
+            onClick = onUpdate
+        )
+        ActionButton(
+            text = "Delete",
+            modifier = Modifier.weight(0.5f),
+            onClick = onDelete
+        )
+
+    }
+}
+
+@Composable
+fun ExerciseHeader() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, MaterialTheme.colorScheme.onBackground)
+    ) {
+        HeaderCell("Exercise", 1.5f)
+        HeaderCell("Sets", 0.5f)
+        Spacer(modifier = Modifier.weight(2f))
+    }
+}
+
+@Composable
+fun ExerciseRowStyled(
+    exercise: String,
+    onExerciseChange: (String) -> Unit,
+    onRepsChange: (String) -> Unit,
+    reps: String,
+    onUpdate: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(getSizeForElement("ultrasmall"))
+            .border(1.dp, MaterialTheme.colorScheme.onBackground),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        InputCell(exercise,onExerciseChange, 1.5f)
+
+
+        InputCell(reps, onRepsChange, weight = 0.5f,KeyboardType.Number)
+
+        ActionButton(
+            text = "Update",
+            modifier = Modifier.weight(1f),
+            onClick = onUpdate
+        )
+
+        ActionButton(
+            text = "Delete",
+            modifier = Modifier.weight(1f),
+            onClick = onDelete,
+            danger = true
+        )
+    }
+}
+
+@Composable
+private fun ActionButton(
+    text: String,
+    modifier: Modifier,
+    danger: Boolean = false,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = modifier.padding(horizontal = 4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        SettingsButtonGenerator(
+            text = text,
+            onClick = onClick,
+        )
+    }
+}
+
+@Composable
+fun AddExerciseCard(
+    newExerciseName: String,
+    onExerciseNameChange: (String) -> Unit,
+    newReps: String,
+    onRepsChange: (String) -> Unit,
+    onAddExercse: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp)
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.onBackground,
+                shape = MaterialTheme.shapes.medium
+            )
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        Text(
+            text = "Add exercise",
+            fontSize = 18.sp,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        OutlinedTextFieldGenerator(
+            value = newExerciseName,
+            onValueChange = onExerciseNameChange,
+            label = "Exercise name",
+            false
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextFieldGenerator(
+            value = newReps,
+            onValueChange = onRepsChange,
+            label = "Sets",
+            false,
+            keyboardType = KeyboardType.Number
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        PrimaryButtonGenerator(
+            text = "Add exercise",
+            onClick = onAddExercse
+        )
+    }
+}
+
+@Composable
+private fun RowScope.HeaderCell(text: String, weight: Float) {
+    Box(
+        modifier = Modifier
+            .weight(weight)
+            .height(getSizeForElement("ultrasmall"))
+            .border(1.dp, MaterialTheme.colorScheme.onBackground),
+        contentAlignment = Alignment.Center
+    ) {
+        TextGenerator(text, MaterialTheme.colorScheme.onBackground, "small", true)
+    }
+}
+
+@Composable
+private fun RowScope.InputCell(
+    value: String,
+    onValueChange: (String) -> Unit,
+    weight: Float,
+    keyboardType: KeyboardType = KeyboardType.Text
+) {
+    Box(
+        modifier = Modifier
+            .weight(weight)
+            .height(getSizeForElement("ultrasmall"))
+            .border(1.dp, MaterialTheme.colorScheme.onBackground),
+        contentAlignment = Alignment.Center
+    ) {
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            textStyle = TextStyle(
+                fontSize = getSize("ultrasmall"),
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun SettingScreenPreview() {
+    SettingScreen()
 }
