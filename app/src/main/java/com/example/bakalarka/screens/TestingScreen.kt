@@ -1,476 +1,369 @@
 package com.example.bakalarka.screens
 
+import android.R.attr.value
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.times
 import com.example.bakalarka.other_classes.*
 import com.example.bakalarka.other_classes.ElementSizeProvider.getSize
 import com.example.bakalarka.other_classes.ElementSizeProvider.getSizeForElement
-/*
+
+
+
 @Composable
-fun SettingScreenDesignOnly() {
-
-    Column(
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.background)
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-
-        Text(
-            text = "Edit your training routines",
-            fontSize = 30.sp,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        /* =========================
-           TRAINING DETAIL
-        ========================== */
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, MaterialTheme.colorScheme.onBackground)
-        ) {
-            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                TextGenerator("Training Name", MaterialTheme.colorScheme.onBackground, "body", true)
-            }
-            Box(modifier = Modifier.weight(1f))
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
-        ) {
-
-            Box(modifier = Modifier.weight(1.5f)
-                .height(getSizeForElement("ultrasmall"))
-                .fillMaxWidth()
-                .border(1.dp, MaterialTheme.colorScheme.onBackground),
-                contentAlignment = Alignment.Center) {
-                BasicTextField(
-                    value = "Push day",
-                    onValueChange = {},
-                    textStyle = TextStyle(
-                        fontSize = getSize("ultrasmall"),
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onBackground
-                    ),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            Box(
-                modifier = Modifier.weight(0.7f),
-                contentAlignment = Alignment.Center
-            ) {
-                SettingsButtonGenerator("Update", onClick = {})
-            }
-        }
-
-        /* =========================
-           EXERCISES HEADER
-        ========================== */
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Box(modifier = Modifier.weight(1f).border(2.dp, MaterialTheme.colorScheme.onBackground), contentAlignment = Alignment.Center) {
-                TextGenerator("Exercise", MaterialTheme.colorScheme.onBackground, "small", true)
-            }
-            Box(modifier = Modifier.weight(0.5f).border(2.dp, MaterialTheme.colorScheme.onBackground), contentAlignment = Alignment.Center) {
-                TextGenerator("Reps", MaterialTheme.colorScheme.onBackground, "small", true)
-            }
-            Box(modifier = Modifier.weight(1.5f))
-        }
-
-        /* =========================
-           EXERCISES LIST (STATIC)
-        ========================== */
-
-        repeat(2) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-
-                Box(modifier = Modifier.weight(1f)
-                    .height(getSizeForElement("ultrasmall"))
-                    .fillMaxWidth()
-                    .border(1.dp, MaterialTheme.colorScheme.onBackground),
-                    contentAlignment = Alignment.Center
-                ) {
-                    BasicTextField(
-                        value = "Bench Press",
-                        onValueChange = {},
-                        textStyle = TextStyle(
-                            fontSize = getSize("ultrasmall"),
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onBackground
-                        ),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-
-                }
-
-                Box(
-                    modifier = Modifier
-                        .height(getSizeForElement("ultrasmall"))
-                        .fillMaxWidth()
-                        .weight(0.5f)
-                        .border(1.dp, MaterialTheme.colorScheme.onBackground),
-                    contentAlignment = Alignment.Center
-                ) {
-                    BasicTextField(
-                        value = "10",
-                        onValueChange = {},
-                        textStyle = TextStyle(
-                            fontSize = getSize("ultrasmall"),
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onBackground
-                        ),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                Box(
-                    modifier = Modifier.weight(0.7f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    SettingsButtonGenerator("Update", onClick = {})
-                }
-
-                Box(
-                    modifier = Modifier.weight(0.8f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    SettingsButtonGenerator("Delete", onClick = {})
-                }
-            }
-        }
-
-
-        /* =========================
-           ADD EXERCISE
-        ========================== */
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Add exercise",
-            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 18.sp
-        )
-
-        OutlinedTextFieldGenerator(
-            value = "New exercise",
-            onValueChange = {},
-            label = "Exercise name",
-            false
-        )
-
-        OutlinedTextFieldGenerator(
-            value = "12",
-            onValueChange = {},
-            label = "Reps",
-            false,
-            keyboardType = KeyboardType.Number
-        )
-
-        SettingsButtonGenerator("Add exercise", onClick = {})
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        PrimaryButtonGenerator("Back", onClick = {})
-    }
-}
-*/
-/*
-@Composable
-fun SettingScreenDesignOnly() {
+private fun SearchCulumn() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
-
-        TrainingHeader()
-
-        TrainingDefaultRowStyled("push day", {})
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        ExerciseHeader()
-
-
-        repeat(3) {
-            ExerciseRowStyled(
-                exercise = "Bench Press",
-                reps = "10",
-                onUpdate = {},
-                onDelete = {}
-            )
-        }
-
-        AddExerciseCard()
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        PrimaryButtonGenerator("Back", onClick = {})
-    }
-}
-@Composable
-fun TrainingHeader(){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, MaterialTheme.colorScheme.onBackground)
-    ) {
-        HeaderCell("Training name", 1f)
-        Spacer(modifier = Modifier.weight(1f))
-    }
-}
-
-@Composable
-fun TrainingDefaultRowStyled(
-    training: String,
-    onEdit: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(getSizeForElement("ultrasmall"))
-            .border(1.dp, MaterialTheme.colorScheme.onBackground),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        InputCell(training, 1f)
-
-        ActionButton(
-            text = "Edit",
-            modifier = Modifier.weight(1f),
-            onClick = onEdit
-        )
-
-    }
-}
-
-@Composable
-fun TrainingEditRowStyled(
-    training: String,
-    onUpdate: () -> Unit,
-    onDelete: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(getSizeForElement("ultrasmall"))
-            .border(1.dp, MaterialTheme.colorScheme.onBackground),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        InputCell(training, 1f)
-
-        ActionButton(
-            text = "Edit",
-            modifier = Modifier.weight(0.75f),
-            onClick = onUpdate
-        )
-        ActionButton(
-            text = "Edit",
-            modifier = Modifier.weight(0.75f),
-            onClick = onDelete
-        )
-
-    }
-}
-
-@Composable
-fun ExerciseHeader() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, MaterialTheme.colorScheme.onBackground)
-    ) {
-        HeaderCell("Exercise", 1.5f)
-        HeaderCell("Reps", 0.5f)
-        Spacer(modifier = Modifier.weight(1.5f))
-    }
-}
-
-@Composable
-fun ExerciseRowStyled(
-    exercise: String,
-    reps: String,
-    onUpdate: () -> Unit,
-    onDelete: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(getSizeForElement("ultrasmall"))
-            .border(1.dp, MaterialTheme.colorScheme.onBackground),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        InputCell(exercise, 1.5f)
-
-        InputCell(reps, 0.5f, KeyboardType.Number)
-
-        ActionButton(
-            text = "Update",
-            modifier = Modifier.weight(0.75f),
-            onClick = onUpdate
-        )
-
-        ActionButton(
-            text = "Delete",
-            modifier = Modifier.weight(0.75f),
-            onClick = onDelete,
-            danger = true
-        )
-    }
-}
-
-@Composable
-private fun ActionButton(
-    text: String,
-    modifier: Modifier,
-    danger: Boolean = false,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = modifier.padding(horizontal = 4.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        SettingsButtonGenerator(
-            text = text,
-            onClick = onClick,
-        )
-    }
-}
-
-@Composable
-fun AddExerciseCard() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 24.dp)
-            .border(
-                1.dp,
-                MaterialTheme.colorScheme.onBackground,
-                shape = MaterialTheme.shapes.medium
-            )
-            .padding(16.dp),
+            .systemBarsPadding()
+            .background(MaterialTheme.colorScheme.background),
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Text(
-            text = "Add exercise",
-            fontSize = 18.sp,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = 12.dp)
+        TextGenerator(
+            "Search your training by name",
+            MaterialTheme.colorScheme.onBackground,
+            "subtitle"
         )
 
         OutlinedTextFieldGenerator(
-            value = "",
-            onValueChange = {},
-            label = "Exercise name",
-            false
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextFieldGenerator(
-            value = "",
-            onValueChange = {},
-            label = "Reps",
+            "",
+            {},
+            "Search",
             false,
-            keyboardType = KeyboardType.Number
+            KeyboardType.Text,
+            Icons.Default.Search
         )
-
-        Spacer(modifier = Modifier.height(12.dp))
 
         PrimaryButtonGenerator(
-            text = "Add exercise",
+            text = "Search",
             onClick = {}
         )
     }
 }
 
 @Composable
-private fun RowScope.HeaderCell(text: String, weight: Float) {
-    Box(
+private fun SearchResults(){
+    Column(
         modifier = Modifier
-            .weight(weight)
+            .fillMaxWidth()
+            .systemBarsPadding()
+            .background(MaterialTheme.colorScheme.background)
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.onBackground,
+                shape = MaterialTheme.shapes.medium
+            )
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        TextGenerator("Pick your training", MaterialTheme.colorScheme.onBackground, "subtitle")
+        Spacer(
+            modifier = Modifier.height(16.dp)
+        )
+
+        repeat(3) {
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+            SearchResultsRow()
+        }
+    }
+}
+@Composable
+private fun SearchResultsRow(){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
             .height(getSizeForElement("ultrasmall"))
-            .border(1.dp, MaterialTheme.colorScheme.onBackground),
-        contentAlignment = Alignment.Center
-    ) {
-        TextGenerator(text, MaterialTheme.colorScheme.onBackground, "small", true)
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.onBackground,
+                shape = MaterialTheme.shapes.medium
+            ),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Box(modifier = Modifier.weight(3f),contentAlignment = Alignment.Center){
+            TextGenerator("Training name", MaterialTheme.colorScheme.onBackground, "small")
+        }
+        Box(modifier = Modifier.weight(1.5f),contentAlignment = Alignment.Center){
+            PrimaryButtonGenerator("Pick",{})
+        }
+
     }
 }
 
 @Composable
-private fun RowScope.InputCell(
-    value: String,
-    weight: Float,
-    keyboardType: KeyboardType = KeyboardType.Text
-) {
-    Box(
+private fun WorkoutsColumn(){
+    Column(
         modifier = Modifier
-            .weight(weight)
-            .height(getSizeForElement("ultrasmall"))
-            .border(1.dp, MaterialTheme.colorScheme.onBackground),
-        contentAlignment = Alignment.Center
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        BasicTextField(
-            value = value,
-            onValueChange = {},
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            textStyle = TextStyle(
-                fontSize = getSize("ultrasmall"),
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onBackground
-            ),
-            modifier = Modifier.fillMaxWidth()
+
+        /* ===== PREVIOUS WORKOUT ===== */
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        PreviousWorkoutColumn()
+
+        /* ===== CURRENT EXERCISE ===== */
+
+        CurrentExerciseColumn()
+
+
+    }
+}
+
+@Composable
+private fun PreviousWorkoutColumn(){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.onBackground,
+                shape = MaterialTheme.shapes.medium
+            )
+            .padding(start = 10.dp, end = 10.dp, top = 5.dp, bottom = 5.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        if (false) {
+            TextGenerator(
+                "Loading exercise...",
+                MaterialTheme.colorScheme.onBackground,
+                "small"
+            )
+            return@Column
+        }
+
+
+        if (true) {
+
+            TextGenerator(
+                "Your previous workout:",
+                MaterialTheme.colorScheme.onBackground,
+                "body"
+            )
+
+
+
+            TextGenerator("21.12", MaterialTheme.colorScheme.onBackground, "small")
+
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                val sets = (1..15).toList()  // Vytvoríme zoznam čísel od 1 do 15
+
+                // Pre každú tretinu z 15 setov
+                for (i in 0 until 3) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        // Pre každý set v príslušnej tretine
+                        for (j in 1..5) {
+                            val setNumber = i * 5 + j  // Výpočet aktuálneho čísla setu
+                            TextGenerator("Set $setNumber", MaterialTheme.colorScheme.onBackground, "ultrasmall")
+                        }
+                    }
+                }
+            }
+
+
+        } else {
+            TextGenerator(
+                "No previous workouts",
+                MaterialTheme.colorScheme.onBackground,
+                "ultrasmall"
+            )
+        }
+    }
+}
+
+@Composable
+private fun ColumnScope.CurrentExerciseColumn() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .weight(1f)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        if (false) {
+            TextGenerator(
+                "Loading exercise...",
+                MaterialTheme.colorScheme.onBackground,
+                "small"
+            )
+            return@Column
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        TextGenerator(
+            "Exercise one",
+            MaterialTheme.colorScheme.onBackground,
+            "subtitle"
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        repeat(2) { index ->
+            WorkoutInputColumn()
+        }
+
+
+        PrimaryButtonGenerator(
+            text = "Next Exercise",
+            onClick = {}
+        )
+
+        PrimaryButtonGenerator(
+            text = "Back",
+            onClick = {}
         )
     }
 }
-*/
 
-
-
-@Preview(showBackground = true)
 @Composable
-fun SettingScreenDesignPreview() {
-   // SettingScreenDesignOnly()
+private fun WorkoutInputColumn(){
+    Column(modifier = Modifier.fillMaxWidth()
+            .border(1.dp, MaterialTheme.colorScheme.onBackground, shape = MaterialTheme.shapes.medium)
+            .padding(10.dp),
+        Arrangement.Center,
+        Alignment.CenterHorizontally
+    ) {
+
+        TextGenerator(
+            "Set number 1",
+            MaterialTheme.colorScheme.onBackground,
+            "small"
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Row(){
+            InputBox("reps",{},1f)
+            Box(modifier = Modifier.weight(0.1f))
+            InputBox("weight",{},1f)
+
+        }
+    }
+    Spacer(modifier = Modifier.height(20.dp))
+
 }
+
+@Composable
+private fun RowScope.InputBox(value: String, onValueChange: (String) -> Unit,weight: Float) {
+    Box(
+        modifier = Modifier
+            .weight(weight)
+            .height(getSizeForElement("ultrasmall")),
+        contentAlignment = Alignment.Center
+    ) {
+
+        BasicTextField(
+            value = value,
+            onValueChange = {onValueChange(it)},
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            textStyle = TextStyle(
+                fontSize = getSize("small"),
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(3 * getSizeForElement("ultrasmall"))
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.onBackground,
+                    RoundedCornerShape(30)
+                ),
+            decorationBox = { innerTextField ->
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (value.isEmpty()) {
+                        TextGenerator(
+                            "weight",
+                            MaterialTheme.colorScheme.onBackground,
+                            "small"
+                        )
+                    }
+                    innerTextField()
+                }
+            }
+        )
+
+
+    }
+}
+
+@Composable
+fun TrainingScreenTest() {
+
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.background)
+            .fillMaxSize()
+            .padding(start = 16.dp, end = 16.dp),
+    ){
+        if (false) {
+            SearchCulumn()
+        }
+
+
+        else if (false) {
+            SearchResults()
+        }
+
+
+        else if (true) {
+
+            WorkoutsColumn()
+
+        }
+    }
+    }
+
+
+
+
+
+@Preview
+@Composable
+fun TrainingScreenTestPreview() {
+    TrainingScreenTest()
+}
+
+
+
+

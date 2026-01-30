@@ -43,6 +43,9 @@ object ElementSizeProvider {
             else -> 1.45f
         }
 
+        viewModel.setScreenScale(scale)
+
+
 
 
 

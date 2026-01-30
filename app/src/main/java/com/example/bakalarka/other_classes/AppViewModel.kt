@@ -391,11 +391,19 @@ class AppViewModel : ViewModel() {
     var density = 1f
         private set
 
+    var scale = 1f
+        private set
+
     fun setScreenInfo(width: Int, height: Int, density: Float) {
         screenWidth = width
         screenHeight = height
         this.density = density
     }
+
+    fun setScreenScale(scale: Float) {
+        this.scale = scale
+    }
+
 
     fun getScreenHeightPX(): Int {
         return Resources.getSystem().displayMetrics.heightPixels
