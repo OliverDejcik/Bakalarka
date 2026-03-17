@@ -25,10 +25,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
+import com.example.bakalarka.data.Training
 import com.example.bakalarka.other_classes.*
 import com.example.bakalarka.other_classes.ElementSizeProvider.getSize
 import com.example.bakalarka.other_classes.ElementSizeProvider.getSizeForElement
-
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -65,7 +67,11 @@ private fun SearchCulumn() {
 }
 
 @Composable
-private fun SearchResults(){
+private fun SearchResults(
+    listTrainings: List<Training>,
+    onClick: () -> Unit,
+    onBack: () -> Unit,
+){
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -85,12 +91,18 @@ private fun SearchResults(){
             modifier = Modifier.height(16.dp)
         )
 
-        repeat(3) {
-            Spacer(
-                modifier = Modifier.height(8.dp)
+        listTrainings.forEach { training ->
+            PrimaryButtonGenerator(
+                text = training.name,
+                onClick = onClick
             )
-            SearchResultsRow()
         }
+
+        PrimaryButtonGenerator(
+            text = "Back",
+            modifier = Modifier.padding(top = 10.dp),
+            onClick = onBack
+        )
     }
 }
 @Composable
@@ -341,18 +353,19 @@ fun TrainingScreenTest() {
         }
 
 
-        else if (false) {
-            SearchResults()
+        else if (true) {
+
+
         }
 
 
-        else if (true) {
+        else if (false) {
 
             WorkoutsColumn()
 
         }
     }
-    }
+}
 
 
 
