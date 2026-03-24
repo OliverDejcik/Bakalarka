@@ -100,4 +100,6 @@ dependencies {
     // GRAFY
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     implementation("co.yml:ycharts:2.1.0")
+
+
 }

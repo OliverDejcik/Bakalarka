@@ -1,369 +1,144 @@
 package com.example.bakalarka.screens
 
-import android.R.attr.value
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
-import com.example.bakalarka.data.Training
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bakalarka.other_classes.*
-import com.example.bakalarka.other_classes.ElementSizeProvider.getSize
-import com.example.bakalarka.other_classes.ElementSizeProvider.getSizeForElement
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-
+import java.time.LocalDate
+import java.time.YearMonth
 
 @Composable
-private fun SearchCulumn() {
+fun calendarBuilder(viewModel: AppViewModel) { // Pridaný parameter
+
+    val daysOfWeek = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    val currentMonth = remember { YearMonth.now() }
+    val currentDay = remember { LocalDate.now().dayOfMonth }
+    val isActualMonth = remember { currentMonth == YearMonth.now() }
+
+    // Správny odber stavu zo StateFlow
+    val selectedDate by viewModel.selectedDate.collectAsState()
+
+    val daysInMonth = currentMonth.lengthOfMonth()
+    val firstDayOfMonth = currentMonth.atDay(1).dayOfWeek.value
+
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .systemBarsPadding()
-            .background(MaterialTheme.colorScheme.background),
+            .fillMaxWidth()
+            .padding(top = 20.dp)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.onBackground,
+                shape = RoundedCornerShape(10.dp)
+            )
+            .padding(10.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        TextGenerator(
-            "Search your training by name",
-            MaterialTheme.colorScheme.onBackground,
-            "subtitle"
-        )
-
-        OutlinedTextFieldGenerator(
-            "",
-            {},
-            "Search",
-            false,
-            KeyboardType.Text,
-            Icons.Default.Search
-        )
-
-        PrimaryButtonGenerator(
-            text = "Search",
-            onClick = {}
-        )
-    }
-}
-
-@Composable
-private fun SearchResults(
-    listTrainings: List<Training>,
-    onClick: () -> Unit,
-    onBack: () -> Unit,
-){
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .systemBarsPadding()
-            .background(MaterialTheme.colorScheme.background)
-            .border(
-                1.dp,
-                MaterialTheme.colorScheme.onBackground,
-                shape = MaterialTheme.shapes.medium
-            )
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        TextGenerator("Pick your training", MaterialTheme.colorScheme.onBackground, "subtitle")
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
-
-        listTrainings.forEach { training ->
-            PrimaryButtonGenerator(
-                text = training.name,
-                onClick = onClick
-            )
-        }
-
-        PrimaryButtonGenerator(
-            text = "Back",
-            modifier = Modifier.padding(top = 10.dp),
-            onClick = onBack
-        )
-    }
-}
-@Composable
-private fun SearchResultsRow(){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(getSizeForElement("ultrasmall"))
-            .border(
-                1.dp,
-                MaterialTheme.colorScheme.onBackground,
-                shape = MaterialTheme.shapes.medium
-            ),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ){
-        Box(modifier = Modifier.weight(3f),contentAlignment = Alignment.Center){
-            TextGenerator("Training name", MaterialTheme.colorScheme.onBackground, "small")
-        }
-        Box(modifier = Modifier.weight(1.5f),contentAlignment = Alignment.Center){
-            PrimaryButtonGenerator("Pick",{})
-        }
-
-    }
-}
-
-@Composable
-private fun WorkoutsColumn(){
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-
-        /* ===== PREVIOUS WORKOUT ===== */
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        PreviousWorkoutColumn()
-
-        /* ===== CURRENT EXERCISE ===== */
-
-        CurrentExerciseColumn()
-
-
-    }
-}
-
-@Composable
-private fun PreviousWorkoutColumn(){
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .border(
-                1.dp,
-                MaterialTheme.colorScheme.onBackground,
-                shape = MaterialTheme.shapes.medium
-            )
-            .padding(start = 10.dp, end = 10.dp, top = 5.dp, bottom = 5.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        if (false) {
-            TextGenerator(
-                "Loading exercise...",
-                MaterialTheme.colorScheme.onBackground,
-                "small"
-            )
-            return@Column
-        }
-
-
-        if (true) {
-
-            TextGenerator(
-                "Your previous workout:",
-                MaterialTheme.colorScheme.onBackground,
-                "body"
-            )
-
-
-
-            TextGenerator("21.12", MaterialTheme.colorScheme.onBackground, "small")
-
-
-            Row(modifier = Modifier.fillMaxWidth()) {
-                val sets = (1..15).toList()  // Vytvoríme zoznam čísel od 1 do 15
-
-                // Pre každú tretinu z 15 setov
-                for (i in 0 until 3) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        // Pre každý set v príslušnej tretine
-                        for (j in 1..5) {
-                            val setNumber = i * 5 + j  // Výpočet aktuálneho čísla setu
-                            TextGenerator("Set $setNumber", MaterialTheme.colorScheme.onBackground, "ultrasmall")
-                        }
-                    }
+        TextGenerator("Calendar", MaterialTheme.colorScheme.onBackground, "subtitle")
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(7),
+            modifier = Modifier.fillMaxWidth()
+                .border(1.dp, MaterialTheme.colorScheme.onBackground, RectangleShape)
+        ) {
+            items(count = 7){ index ->
+                Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.Center){
+                    Text(text = daysOfWeek[index])
                 }
             }
 
+            items(firstDayOfMonth - 1) {
+                Box(modifier = Modifier.size(40.dp))
+            }
 
-        } else {
-            TextGenerator(
-                "No previous workouts",
-                MaterialTheme.colorScheme.onBackground,
-                "ultrasmall"
-            )
-        }
-    }
-}
+            items(daysInMonth) { day ->
+                val dateAtDay = currentMonth.atDay(day + 1)
+                val isSelected = selectedDate == dateAtDay
+                val isToday = isActualMonth && (day == currentDay - 1)
 
-@Composable
-private fun ColumnScope.CurrentExerciseColumn() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .weight(1f)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        if (false) {
-            TextGenerator(
-                "Loading exercise...",
-                MaterialTheme.colorScheme.onBackground,
-                "small"
-            )
-            return@Column
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        TextGenerator(
-            "Exercise one",
-            MaterialTheme.colorScheme.onBackground,
-            "subtitle"
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        repeat(2) { index ->
-            WorkoutInputColumn()
-        }
-
-
-        PrimaryButtonGenerator(
-            text = "Next Exercise",
-            onClick = {}
-        )
-
-        PrimaryButtonGenerator(
-            text = "Back",
-            onClick = {}
-        )
-    }
-}
-
-@Composable
-private fun WorkoutInputColumn(){
-    Column(modifier = Modifier.fillMaxWidth()
-            .border(1.dp, MaterialTheme.colorScheme.onBackground, shape = MaterialTheme.shapes.medium)
-            .padding(10.dp),
-        Arrangement.Center,
-        Alignment.CenterHorizontally
-    ) {
-
-        TextGenerator(
-            "Set number 1",
-            MaterialTheme.colorScheme.onBackground,
-            "small"
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Row(){
-            InputBox("reps",{},1f)
-            Box(modifier = Modifier.weight(0.1f))
-            InputBox("weight",{},1f)
-
-        }
-    }
-    Spacer(modifier = Modifier.height(20.dp))
-
-}
-
-@Composable
-private fun RowScope.InputBox(value: String, onValueChange: (String) -> Unit,weight: Float) {
-    Box(
-        modifier = Modifier
-            .weight(weight)
-            .height(getSizeForElement("ultrasmall")),
-        contentAlignment = Alignment.Center
-    ) {
-
-        BasicTextField(
-            value = value,
-            onValueChange = {onValueChange(it)},
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            textStyle = TextStyle(
-                fontSize = getSize("small"),
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onBackground
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(3 * getSizeForElement("ultrasmall"))
-                .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.onBackground,
-                    RoundedCornerShape(30)
-                ),
-            decorationBox = { innerTextField ->
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clickable { viewModel.onDateSelected(dateAtDay) } // Volanie funkcie vo ViewModeli
+                        .background(
+                            color = if (isToday) MaterialTheme.colorScheme.primary
+                            else if (isSelected) Color.Transparent
+                            else Color.Transparent,
+                        )
+                        .then(
+                            if (isSelected) Modifier.border(
+                                1.dp,
+                                MaterialTheme.colorScheme.onBackground,
+                            )
+                            else Modifier
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (value.isEmpty()) {
-                        TextGenerator(
-                            "weight",
-                            MaterialTheme.colorScheme.onBackground,
-                            "small"
-                        )
-                    }
-                    innerTextField()
+                    Text(
+                        text = "${day + 1}",
+                        color = if (isSelected) MaterialTheme.colorScheme.onBackground
+                        else MaterialTheme.colorScheme.onBackground
+                    )
                 }
             }
-        )
+        }
+        Column(Modifier.fillMaxWidth()){
+            Row(verticalAlignment = Alignment.CenterVertically){
+                Icon(
+                    Icons.Default.Circle,
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                TextGenerator(text = "Today",color = MaterialTheme.colorScheme.onBackground, textType = "ultrasmall")
+            }
+            Row(verticalAlignment = Alignment.CenterVertically){
+                Icon(
+                    Icons.Default.Circle,
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.secondary
+                )
+                TextGenerator(text = "Done W.O.",color = MaterialTheme.colorScheme.onBackground, textType = "ultrasmall")
+            }
+            Row(verticalAlignment = Alignment.CenterVertically){
+                Icon(
+                    Icons.Default.Circle,
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.tertiary
+                )
+                TextGenerator(text = "Planned W.O.",color = MaterialTheme.colorScheme.onBackground, textType = "ultrasmall")
+            }
 
-
+        }
     }
 }
 
 @Composable
-fun TrainingScreenTest() {
+fun ScreenTest(viewModel: AppViewModel = viewModel()) {
 
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.background)
-            .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp),
-    ){
-        if (false) {
-            SearchCulumn()
-        }
+    val selectedDate by viewModel.selectedDate.collectAsState()
 
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        calendarBuilder(viewModel)
+        Spacer(modifier = Modifier.height(16.dp))
 
-        else if (true) {
-
-
-        }
-
-
-        else if (false) {
-
-            WorkoutsColumn()
-
-        }
+        TextGenerator(text = "Selected day: ${selectedDate ?: "None"}",color = MaterialTheme.colorScheme.onBackground, textType = "subtitle")
     }
 }
 
@@ -371,10 +146,10 @@ fun TrainingScreenTest() {
 
 
 
-@Preview
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun TrainingScreenTestPreview() {
-    TrainingScreenTest()
+    ScreenTest()
 }
 
 

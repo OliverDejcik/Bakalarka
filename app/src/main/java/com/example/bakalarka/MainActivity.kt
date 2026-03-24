@@ -9,6 +9,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -170,6 +171,16 @@ fun Bakalarka(
                             contentDescription = "Statistics"
                         )
                     }
+                    IconButton(
+                        modifier = Modifier.weight(0.5f),
+                        onClick = {
+                            navController.navigate(Screens.Testing.route) {
+                                popUpTo(0)
+                            }
+                        }
+                    ) {
+                        Icon(Icons.Default.Bookmark, contentDescription = "Add")
+                    }
                 }
             }
         }
@@ -218,6 +229,9 @@ fun NavGraph(
         }
         composable(Screens.Settings.route) {
             SettingScreen(viewModel)
+        }
+        composable(Screens.Testing.route) {
+            ScreenTest(viewModel)
         }
     }
 }

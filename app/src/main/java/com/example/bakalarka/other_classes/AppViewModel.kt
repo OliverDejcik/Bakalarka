@@ -25,6 +25,8 @@ import com.example.bakalarka.supabase.getWorkoutExercisesByExerciseId
 import com.example.bakalarka.supabase.removeExerciseById
 import com.example.bakalarka.supabase.updateExerciseNameReps
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -372,7 +374,12 @@ class AppViewModel : ViewModel() {
 
 
 
+    private val _selectedDate = MutableStateFlow<LocalDate?>(LocalDate.now())
+    val selectedDate = _selectedDate.asStateFlow()
 
+    fun onDateSelected(date: LocalDate) {
+        _selectedDate.value = date
+    }
 
 
 
