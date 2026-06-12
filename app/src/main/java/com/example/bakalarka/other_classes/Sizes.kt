@@ -46,9 +46,6 @@ object ElementSizeProvider {
         viewModel.setScreenScale(scale)
 
 
-
-
-
         val baseSize = when (name.lowercase()) {
             "title" -> 26.sp
             "subtitle" -> 20.sp

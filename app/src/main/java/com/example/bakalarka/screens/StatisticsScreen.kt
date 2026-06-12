@@ -14,20 +14,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
-import com.example.bakalarka.Bakalarka
-import com.example.bakalarka.data.Exercise
-import com.example.bakalarka.data.Training
 import com.example.bakalarka.other_classes.AppViewModel
 import com.example.bakalarka.other_classes.LineChartView
 import com.example.bakalarka.other_classes.PrimaryButtonGenerator
 import com.example.bakalarka.other_classes.SelectBoxMaterial
 import com.example.bakalarka.supabase.CurrentUserHolder
-import com.example.bakalarka.ui.theme.BakalarkaTheme
-
+import com.example.bakalarka.R
 @Composable
 fun StatisticsScreen(viewModel: AppViewModel = viewModel()) {
 
@@ -100,7 +95,7 @@ fun StatisticsScreen(viewModel: AppViewModel = viewModel()) {
                 )
             }
             if (selectedExercise != "Pick your exercise") {
-                PrimaryButtonGenerator("Get statistics", onClick = { StatsPicker = false
+                PrimaryButtonGenerator(stringResource(R.string.button_get_statistics), onClick = { StatsPicker = false
                     viewModel.loadWorkoutExercisesByExerciseId(selectedExerciseId)
                 })
             }
@@ -132,7 +127,7 @@ fun StatisticsScreen(viewModel: AppViewModel = viewModel()) {
                 "Bench Press Progress",
             )
 
-            PrimaryButtonGenerator("Back", onClick = { StatsPicker = true })
+            PrimaryButtonGenerator(stringResource(R.string.button_back), onClick = { StatsPicker = true })
 
 
         }

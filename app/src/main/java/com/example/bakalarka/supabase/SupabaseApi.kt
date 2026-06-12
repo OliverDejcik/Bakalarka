@@ -30,7 +30,7 @@ suspend fun addExerciseToWorkoutDB(
     userId: Int,
     workoutId: Int,
     exerciseId: Int,
-    weight: Int,
+    weight: Float,
     reps: Int,
     setNumber: Int
 ) {
@@ -228,6 +228,50 @@ suspend fun changeUserPassword(userId: Int, newPassword: String) {
                 }
             }
     }
+}
+
+suspend fun changeUserUsername(userId: Int, newUsername: String) {
+    return withContext(Dispatchers.IO) {// 1. Zahashujeme nové heslo pomocou BCrypt
+
+        // 2. Použijeme operáciu `update` na zmenu záznamu v tabuľke "users"
+        supabase.from("users")
+            .update(
+                mapOf("username" to newUsername) // Hodnota, ktorú meníme
+            ) {
+                // 3. Pomocou filtra špecifikujeme, KTORÝ záznam sa má zmeniť
+                filter {
+                    eq("id", userId)
+                }
+            }
+    }
+}
+
+suspend fun changeUserEmail(userId: Int, newEmail: String) {
+    return withContext(Dispatchers.IO) {// 1. Zahashujeme nové heslo pomocou BCrypt
+
+        // 2. Použijeme operáciu `update` na zmenu záznamu v tabuľke "users"
+        supabase.from("users")
+            .update(
+                mapOf("email" to newEmail) // Hodnota, ktorú meníme
+            ) {
+                // 3. Pomocou filtra špecifikujeme, KTORÝ záznam sa má zmeniť
+                filter {
+                    eq("id", userId)
+                }
+            }
+    }
+}
+
+suspend fun databaseUserResponse(username: String): User? {
+    return supabase.from("users")
+        .select() // select() bez parametrov znamená "vyber všetky stĺpce"
+        {
+            filter {
+                eq("username", username)
+            }
+        }
+        .decodeSingleOrNull<User>()
+
 }
 
 suspend fun getTrainingsByName(name: String,userId: Int): List<Training> {

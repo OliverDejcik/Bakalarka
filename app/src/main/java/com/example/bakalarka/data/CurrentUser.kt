@@ -12,6 +12,9 @@ object CurrentUserHolder {
     fun login(user: User) {
         currentUser = user
     }
+    fun getUsername(): String? {
+        return currentUser?.username
+    }
 
     fun logout() {
         currentUser = null

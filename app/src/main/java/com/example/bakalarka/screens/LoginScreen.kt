@@ -21,11 +21,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.bakalarka.R
+import com.example.bakalarka.animations.LoadingAnimation
 import com.example.bakalarka.other_classes.AppViewModel
 import com.example.bakalarka.other_classes.OutlinedTextFieldGenerator
 import com.example.bakalarka.other_classes.PrimaryButtonGenerator
@@ -45,87 +48,87 @@ fun LoginScreen(navController: NavHostController, viewModel: AppViewModel = view
     val composableScope = rememberCoroutineScope()
     val context = LocalContext.current
 
+    val isLoading = viewModel.isLoading
 
 
+    if(isLoading){
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+            LoadingAnimation()
+        }
 
-    Column(verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.background(MaterialTheme.colorScheme.background).fillMaxSize()
-    )
-    {
+    }else{
         Column(verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.background(MaterialTheme.colorScheme.background).fillMaxWidth()
-        ) {
-            TextGenerator("Login", MaterialTheme.colorScheme.onBackground, "title")
+            modifier = Modifier.background(MaterialTheme.colorScheme.background).fillMaxSize()
+        )
+        {
+            Column(verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.background(MaterialTheme.colorScheme.background).fillMaxWidth()
+            ) {
+                TextGenerator(stringResource(R.string.login_screen_title), MaterialTheme.colorScheme.onBackground, "title")
 
-            OutlinedTextFieldGenerator(value = username,
-                onValueChange = {username = it},
-                label = "username",
-                isPassword = false,
-                keyboardType = KeyboardType.Text,
-                leadingIcon = Icons.Default.Person
-            )
+                OutlinedTextFieldGenerator(value = username,
+                    onValueChange = {username = it},
+                    label = stringResource(R.string.outlined_text_field_label_username),
+                    isPassword = false,
+                    keyboardType = KeyboardType.Text,
+                    leadingIcon = Icons.Default.Person
+                )
 
 
-            OutlinedTextFieldGenerator(
-                password,
-                { password = it },
-                "password",
-                isPassword = true,
-                keyboardType = KeyboardType.Password,
-                leadingIcon = Icons.Default.Lock
-            )
+                OutlinedTextFieldGenerator(
+                    password,
+                    { password = it },
+                    stringResource(R.string.outlined_text_field_label_password),
+                    isPassword = true,
+                    keyboardType = KeyboardType.Password,
+                    leadingIcon = Icons.Default.Lock
+                )
 
-            PrimaryButtonGenerator(text = "Login", onClick = {
-                // 1. Validácia vstupov
-                val email = username.trim()
-                val pass = password
 
-                if (email.isBlank() || pass.isEmpty()) {
-                    Toast.makeText(context, "Please fill in all fields.", Toast.LENGTH_SHORT).show()
-                    return@PrimaryButtonGenerator
-                }
+                PrimaryButtonGenerator(text = stringResource(R.string.button_login), onClick = {val email = username.trim()
+                    val pass = password
 
-                // 2. Spustenie korutiny pre volanie suspend funkcie
-                composableScope.launch {
-                    // 3. Volanie `verifyUser` a spracovanie výsledku
-                    val loginSuccessful = verifyUser(username = username, password = password)
-
-                    // 4. Reakcia na výsledok v UI threade
-                    if (loginSuccessful) {
-                        // Úspech: Zobraz správu a naviguj na domovskú obrazovku
-                        Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
-                        navController.navigate(Screens.Home.route) {
-                            // Vymaže back stack, aby sa používateľ nemohol vrátiť na login
-                            popUpTo(Screens.Login.route) {
-                                inclusive = true
-                            }
-                            launchSingleTop = true
-                        }
-                    } else {
-                        // Neúspech: Zobraz chybovú hlášku
-                        Toast.makeText(context, "Invalid email or password.", Toast.LENGTH_SHORT).show()
+                    if (email.isBlank() || pass.isEmpty()) {
+                        Toast.makeText(context, R.string.form_error_blank, Toast.LENGTH_SHORT).show()
+                        return@PrimaryButtonGenerator
                     }
+
+
+
+                    // Voláme funkciu vo Viewmodeli
+                    viewModel.login(email, pass) { loginSuccessful ->
+                        if (loginSuccessful) {
+                            Toast.makeText(context, R.string.login_screen_popup_success, Toast.LENGTH_SHORT).show()
+                            navController.navigate(Screens.Home.route) {
+                                popUpTo(Screens.Login.route) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        } else {
+                            Toast.makeText(context, R.string.login_screen_popup_failed, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                })
+            }
+
+            Row(horizontalArrangement = Arrangement.Center,verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()){
+                Box(modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    TextGenerator(stringResource(R.string.login_screen_no_account), MaterialTheme.colorScheme.onBackground, "label")
                 }
-            })
-        }
 
-        Row(horizontalArrangement = Arrangement.Center,verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()){
-            Box(modifier = Modifier.weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                TextGenerator("No account?", MaterialTheme.colorScheme.onBackground, "label")
+                Box(modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    SecondaryButtonGenerator(text = stringResource(R.string.button_register), onClick = {navController.navigate(Screens.Register.route) { launchSingleTop = true }})
+                }
             }
 
-            Box(modifier = Modifier.weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                SecondaryButtonGenerator(text = "Register", onClick = {navController.navigate(Screens.Register.route) { launchSingleTop = true }})
-            }
         }
-
     }
+
 }
 
 

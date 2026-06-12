@@ -2,18 +2,26 @@ package com.example.bakalarka.other_classes
 
 import android.content.res.Resources
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.bakalarka.Bakalarka
 import com.example.bakalarka.data.Exercise
 import com.example.bakalarka.data.Training
+import com.example.bakalarka.data.User
 import com.example.bakalarka.data.WorkoutExercise
 import com.example.bakalarka.screens.SetData
+import com.example.bakalarka.supabase.CurrentUserHolder
 import com.example.bakalarka.supabase.addExerciseDB
 import com.example.bakalarka.supabase.addExerciseToWorkoutDB
 import com.example.bakalarka.supabase.addTrainingDB
 import com.example.bakalarka.supabase.addUser
 import com.example.bakalarka.supabase.addWorkoutToDB
+import com.example.bakalarka.supabase.changeUserEmail
+import com.example.bakalarka.supabase.changeUserUsername
+import com.example.bakalarka.supabase.databaseUserResponse
 import com.example.bakalarka.supabase.deleteTraining
 import com.example.bakalarka.supabase.deleteWorkoutDB
 import com.example.bakalarka.supabase.getExercisesByTrainingId
@@ -23,7 +31,10 @@ import com.example.bakalarka.supabase.getTrainingsByName
 import com.example.bakalarka.supabase.getTrainingsByUserId
 import com.example.bakalarka.supabase.getWorkoutExercisesByExerciseId
 import com.example.bakalarka.supabase.removeExerciseById
+import com.example.bakalarka.supabase.supabase
 import com.example.bakalarka.supabase.updateExerciseNameReps
+import com.example.bakalarka.supabase.verifyUser
+import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,11 +46,93 @@ import java.time.OffsetDateTime
 class AppViewModel : ViewModel() {
 
 
+    // V AppViewModel.kt
+    var isLoading by mutableStateOf(false)
+        private set
+
+    fun login(username: String, pass: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                // Tu voláme tvoju funkciu zo SupabaseApi
+                val success = verifyUser(username, pass)
+                onResult(success)
+            } catch (e: Exception) {
+                // Zachytíme chybu siete/databázy, aby appka nepadla
+                onResult(false)
+            } finally {
+                isLoading = false // Animácia sa vypne vždy, aj pri chybe
+
+
+                val userResponse = databaseUserResponse(username)
+                CurrentUserHolder.logout()
+                if (userResponse != null) {
+                    CurrentUserHolder.login(userResponse)
+                }
+
+            }
+        }
+    }
+
+    val _usenameChangeSuccessful = mutableStateOf(false)
+
+    suspend fun changeUsername(userId: Int, newUsername: String){
+
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                // Volanie suspend funkcie z databázovej vrstvy
+                changeUserUsername(userId, newUsername)
+                _usenameChangeSuccessful.value = true
+            } catch (e: Exception) {
+                println("Change failed ${e.message}")
+            }finally {
+                isLoading = false
+
+                if (_usenameChangeSuccessful.value) {
+                    val userResponse = databaseUserResponse(newUsername)
+                    CurrentUserHolder.logout()
+                    if (userResponse != null) {
+                        CurrentUserHolder.login(userResponse)
+                    }
+                }
+
+
+            }
+        }
+    }
+
+    val _emailChangeSuccessful = mutableStateOf(false)
+
+    suspend fun changeEmail(userId: Int, newEmail: String){
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                // Volanie suspend funkcie z databázovej vrstvy
+                changeUserEmail(userId, newEmail)
+                _emailChangeSuccessful.value = true
+            } catch (e: Exception) {
+                println("Change failed ${e.message}")
+            }finally {
+                isLoading = false
+                if (_usenameChangeSuccessful.value) {
+                    val userResponse = databaseUserResponse(newEmail)
+                    CurrentUserHolder.logout()
+                    if (userResponse != null) {
+                        CurrentUserHolder.login(userResponse)
+                    }
+                }
+
+            }
+        }
+    }
+
     private val _registrationSuccess = mutableStateOf<Boolean?>(null)
     val registrationSuccess: State<Boolean?> = _registrationSuccess
 
     fun registerUser(name: String, pass: String, email: String) {
         viewModelScope.launch {
+            isLoading = true
             try {
                 // Volanie suspend funkcie z databázovej vrstvy
                 addUser(name, pass, email)
@@ -48,6 +141,16 @@ class AppViewModel : ViewModel() {
                 // Ak Supabase alebo sieť vráti chybu, zachytíme ju tu
                 println("Registration failed: ${e.message}")
                 _registrationSuccess.value = false // Registrácia neúspešná
+            }finally {
+                isLoading = false
+
+                if (_registrationSuccess.value == true) {
+                    val userResponse = databaseUserResponse(name)
+                    CurrentUserHolder.logout()
+                    if (userResponse != null) {
+                        CurrentUserHolder.login(userResponse)
+                    }
+                }
             }
         }
     }
@@ -66,11 +169,14 @@ class AppViewModel : ViewModel() {
 
     suspend fun addTraining(name: String, exerciseNum: Int, userId: Int): Int? {
         val deferredTrainingId = viewModelScope.async {
+            isLoading = true
             try {
                 addTrainingDB(name, exerciseNum, userId)
             } catch (e: Exception) {
                 println("Adding training failed: ${e.message}")
                 null
+            } finally {
+                isLoading = false
             }
         }
         return deferredTrainingId.await()
@@ -99,6 +205,7 @@ class AppViewModel : ViewModel() {
         }
 
         viewModelScope.launch {
+            isLoading = true
             try {
                 addExerciseDB(
                     trainingId,
@@ -111,6 +218,8 @@ class AppViewModel : ViewModel() {
                 onSuccess?.invoke()
             } catch (e: Exception) {
                 onError?.invoke(e.message ?: "Unknown error")
+            } finally {
+                isLoading = false
             }
         }
     }
@@ -122,8 +231,13 @@ class AppViewModel : ViewModel() {
         trainingId: Int
     ) {
         viewModelScope.launch {
-            updateExerciseNameReps(exerciseId, name, reps)
-            loadExercisesByTrainingId(trainingId)
+            isLoading = true
+            try {
+                updateExerciseNameReps(exerciseId, name, reps)
+                loadExercisesByTrainingId(trainingId)
+            } finally {
+                isLoading = false
+            }
         }
     }
 
@@ -133,14 +247,24 @@ class AppViewModel : ViewModel() {
         exercieseNum: Int
     ) {
         viewModelScope.launch {
-            removeExerciseById(exerciseId, trainingId, exercieseNum)
-            loadExercisesByTrainingId(trainingId)
+            isLoading = true
+            try {
+                removeExerciseById(exerciseId, trainingId, exercieseNum)
+                loadExercisesByTrainingId(trainingId)
+            } finally {
+                isLoading = false
+            }
         }
     }
 
     fun deleteTrainingById(trainingId: Int){
         viewModelScope.launch {
-            deleteTraining(trainingId)
+            isLoading = true
+            try {
+                deleteTraining(trainingId)
+            } finally {
+                isLoading = false
+            }
         }
 
     }
@@ -162,11 +286,12 @@ class AppViewModel : ViewModel() {
         setDataSet: List<SetData>,
         sets_count: Int
     ) {
+        isLoading = true
         try {
             for (i in 0 until sets_count) {
 
                 val reps = setDataSet[i].reps.toIntOrNull()
-                val weight = setDataSet[i].weight.toIntOrNull()
+                val weight = setDataSet[i].weight.toFloatOrNull()
 
                 if (reps == null || weight == null) {
                     println("Invalid input in set ${i + 1}")
@@ -187,6 +312,8 @@ class AppViewModel : ViewModel() {
 
         } catch (e: Exception) {
             println("addExerciseToWorkout failed: ${e.message}")
+        } finally {
+            isLoading = false
         }
     }
 
@@ -194,11 +321,14 @@ class AppViewModel : ViewModel() {
 
     suspend fun addWorkout(userID:Int,trainingID:Int): Int? {
         val deferredWorkoutId = viewModelScope.async {
+            isLoading = true
             try {
                 addWorkoutToDB(userID,trainingID)
             } catch (e: Exception) {
                 println("Adding workout failed: ${e.message}")
                 null
+            } finally {
+                isLoading = false
             }
         }
         return deferredWorkoutId.await()
@@ -213,10 +343,13 @@ class AppViewModel : ViewModel() {
         _trainings.value = emptyList()
 
         viewModelScope.launch {
+            isLoading = true
             try {
                 _trainings.value = getTrainingsByName(name, userId)
             } catch (e: Exception) {
                 _trainings.value = emptyList()
+            } finally {
+                isLoading = false
             }
         }
     }
@@ -224,10 +357,13 @@ class AppViewModel : ViewModel() {
     fun loadTrainingsByUserId(userId: Int) {
         _trainings.value = emptyList()
         viewModelScope.launch {
+            isLoading = true
             try {
                 _trainings.value = getTrainingsByUserId(userId)
             } catch (e: Exception) {
                 _trainings.value = emptyList()
+            } finally {
+                isLoading = false
             }
         }
     }
@@ -238,10 +374,13 @@ class AppViewModel : ViewModel() {
 
     fun loadExercisesByTrainingId(trainingId: Int) {
         viewModelScope.launch {
+            isLoading = true
             try {
                 _exercises.value = getExercisesByTrainingId(trainingId)
             } catch (e: Exception) {
                 _exercises.value = emptyList()
+            } finally {
+                isLoading = false
             }
         }
     }
@@ -251,10 +390,13 @@ class AppViewModel : ViewModel() {
 
     fun loadWorkoutExercisesByExerciseId(exerciseId: Int) {
         viewModelScope.launch {
+            isLoading = true
             try {
                 _workouEexercises.value = getWorkoutExercisesByExerciseId(exerciseId)
             } catch (e: Exception) {
                 _workouEexercises.value = emptyList()
+            } finally {
+                isLoading = false
             }
         }
     }
@@ -264,21 +406,24 @@ class AppViewModel : ViewModel() {
 
     fun loadpreviousWorkout(trainingId: Int){
         viewModelScope.launch {
-            val workoutId = getLastWorkoutIdByTrainingIdAndDate(trainingId,LocalDate.now())
+            isLoading = true
+            try {
+                val workoutId = getLastWorkoutIdByTrainingIdAndDate(trainingId,LocalDate.now())
 
-            if (workoutId == null){
-                println("je to v pici")
-            }else{
-                try {
-                    _previousWorkout.value = getLastWorkoutbyWorkoutId(workoutId)
-                    println("neni to v pici")
-                } catch (e: Exception) {
-                    println("error")
-                    _previousWorkout.value = emptyList()
+                if (workoutId == null){
+                    println("No previous workout found")
+                }else{
+                    try {
+                        _previousWorkout.value = getLastWorkoutbyWorkoutId(workoutId)
+                        println("Previous workout loaded")
+                    } catch (e: Exception) {
+                        println("error")
+                        _previousWorkout.value = emptyList()
+                    }
                 }
+            } finally {
+                isLoading = false
             }
-
-
         }
     }
 
@@ -364,10 +509,13 @@ class AppViewModel : ViewModel() {
 
     fun deleteWorkout(workoutId: Int) {
         viewModelScope.launch {
+            isLoading = true
             try {
                 deleteWorkoutDB(workoutId)
             } catch (e: Exception) {
                 println("Delete workout failed: ${e.message}")
+            } finally {
+                isLoading = false
             }
         }
     }
@@ -420,4 +568,3 @@ class AppViewModel : ViewModel() {
 
     fun spToPx(sp: Float): Float = sp * density
 }
-

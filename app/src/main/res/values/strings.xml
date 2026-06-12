@@ -1,3 +1,143 @@
 <resources>
+    <!-- Default -->
     <string name="app_name">Bakalarka</string>
+
+    <!-- Buttons -->
+    <string name="button_register">Register</string>
+    <string name="button_login">Login</string>
+    <string name="button_create_training">Create Training</string>
+    <string name="button_add_exercise">Add Exercise</string>
+    <string name="button_back">Back</string>
+    <string name="button_finish_training">Finish Training</string>
+    <string name="button_previous_workout">Previous Workout</string>
+    <string name="button_next_exercise">Next Exercise</string>
+    <string name="button_search">Search</string>
+    <string name="button_get_statistics">Get Statistics</string>
+    <string name="button_change_username">Change username</string>
+    <string name="button_change_email">Change email</string>
+    <string name="button_change_password">Change password</string>
+    <string name="button_logout">Logout</string>
+    <string name="button_edit">Edit</string>
+    <string name="button_update">Update</string>
+    <string name="button_delete">Delete</string>
+
+
+    <!-- Outlined Text Field -->
+    <string name="outlined_text_field_label_username">Username</string>
+    <string name="outlined_text_field_label_email">Email</string>
+    <string name="outlined_text_field_label_password">Password</string>
+    <string name="outlined_text_field_label_confirm_password">Confirm Password</string>
+    <string name="outlined_text_field_label_training_name">Training Name</string>
+    <string name="outlined_text_field_label_number_of_exercises">Number of exercises</string>
+    <string name="outlined_text_field_label_search">Search</string>
+    <string name="outlined_text_field_label_enter_new_username">Enter new username</string>
+    <string name="outlined_text_field_label_enter_new_email">Enter new email</string>
+    <string name="outlined_text_field_label_current_password">Enter current password</string>
+    <string name="outlined_text_field_label_enter_new_password">Enter new password</string>
+    <string name="outlined_text_field_label_enter_new_password_confirm">Confirm new password</string>
+    <string name="outlined_text_field_label_exercise_name">Exercise name</string>
+    <string name="outlined_text_field_label_sets">Sets</string>
+
+
+
+
+
+
+    <!-- Form errors -->
+    <string name="form_error_blank">Please fill in all fields.</string>
+    <string name="form_error_username_space">Username cannot contain spaces.</string>
+    <string name="form_error_email_space">Email cannot contain spaces.</string>
+    <string name="form_error_password_space">Password cannot contain spaces.</string>
+    <string name="form_error_email_invalid">Please enter a valid email address.</string>
+    <string name="form_error_password_length">Password must be at least 8 characters long.</string>
+    <string name="form_error_password_digit">Password must contain at least one digit.</string>
+    <string name="form_error_password_match">Passwords do not match.</string>
+    <string name="form_error_training_name_blank">Training name cannot be blank.</string>
+    <string name="form_error_number_of_exercises_blank">Number of exercises cannot be blank.</string>
+    <string name="form_error_number_of_exercises_invalid">Number of exercises must be a positive integer.</string>
+    <string name="form_error_number_of_exercises_max">Number of exercises cannot exceed 10.</string>
+    <string name="form_error_exercise_name_blank">Exercise name cannot be blank.</string>
+    <string name="form_error_number_of_sets_blank">Number of sets cannot be blank.</string>
+    <string name="form_error_reps_invalid">Number of sets must be a positive integer.</string>
+    <string name="form_error_reps_max">Really that much? Maximum reps is 40.</string>
+    <string name="form_error_sets_invalid">Number of sets must be a positive integer.</string>
+    <string name="form_error_weight_invalid">Weight must be a valid number.</string>
+    <string name="form_error_weight_max">Stronger than Ronnie Coleman? Maximum weight is 1100</string>
+    <string name="form_error_old_new_password_error">New password and old password cannot be the same.</string>
+
+
+
+    <!-- Errors -->
+    <string name="error_user_not_logged_in">User not logged in.</string>
+    <string name="error_network">Network error. Please check your internet connection.</string>
+    <string name="error_no_data">No data available.</string>
+
+
+    <!-- Register Screen -->
+    <string name="register_screen_title">Register</string>
+    <string name="register_screen_popup_success">Registration Successful!</string>
+    <string name="register_screen_popup_failed">Registration Failed. Please try again.</string>
+
+
+
+    <!-- Login Screen -->
+    <string name="login_screen_title">Login</string>
+    <string name="login_screen_no_account">No account?</string>
+    <string name="login_screen_popup_success">Login Successful!</string>
+    <string name="login_screen_popup_failed">Login Failed. Please try again.</string>
+
+    <!-- Home Screen -->
+    <string name="home_welcome_title">Welcome to your workout tracking app!</string>
+    <string name="home_instructions_body">Start by creating your first workout using the plus (+) button at the bottom of the screen.\n\nOnce your workout is created, you can log your training sessions and record your performance by tapping the dumbbell icon and selecting your workout.\n\nFinally, keep track of your progress in the Statistics section, accessible via the chart icon at the bottom of the screen.</string>
+
+    <!-- Add Training Screen -->
+    <string name="add_training_screen_title">Crete new training</string>
+    <string name="add_training_screen_add_exercise">Add Exercise</string>
+    <string name="add_traning_screen_popup_training_created">Training routine created. Now add exercises.</string>
+    <string name="add_traning_screen_popup_training_failed">Failed to create training.</string>
+    <string name="add_traning_screen_popup_training_completed">Training successfully created!</string>
+
+    <!-- Training Screen -->
+    <string name="training_screen_popup_finished">Training</string>
+    <string name="training_screen_search">Search training</string>
+    <string name="training_screen_pick_training">Pick training</string>
+
+    <!-- Statistics Screen -->
+    <string name="statistics_screen_title">Statistics</string>
+    <string name="statistics_screen_pick_workout">Pick workout</string>
+    <string name="statistics_screen_pick_exercise">Pick exercise</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_screen_title">Profile</string>
+    <string name="profile_screen_change_username">Change username</string>
+    <string name="profile_screen_change_email">Change email</string>
+    <string name="profile_screen_change_password">Change password</string>
+    <string name="profile_screen_popup_change_password_successful">Password changed successfully</string>
+    <string name="profile_screen_popup_change_password_failed">Invalid password</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_screen_title">Edit your training routines</string>
+    <string name="settings_screen_training_updated">Training updated</string>
+    <string name="settings_screen_training_deleted">Training deleted</string>
+    <string name="settings_screen_exercise_deleted">Exercise deleted</string>
+    <string name="settings_screen_exercise_updated">Exercise updated</string>
+    <string name="settings_screen_exercise_added">Exercise added</string>
+
+    <string name="settings_screen_dialog_title">Are you sure?</string>
+    <string name="settings_screen_dialog_text">Do you really want to delete this item?</string>
+    <string name="settings_screen_dialog_yes">Yes</string>
+    <string name="settings_screen_dialog_no">No</string>
+
+    <string name="settings_screen_training_name">Training name</string>
+    <string name="settings_screen_exercise_name">Exercise</string>
+    <string name="settings_screen_sets">Sets</string>
+    <string name="settings_screen_add_exercise">Add exercise</string>
+
+
+
+
+
+
+
+
 </resources>

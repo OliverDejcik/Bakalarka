@@ -16,12 +16,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bakalarka.animations.LoadingAnimation
 import com.example.bakalarka.data.Training
 import com.example.bakalarka.other_classes.*
 import com.example.bakalarka.supabase.CurrentUserHolder
@@ -30,6 +33,7 @@ import kotlinx.coroutines.launch
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.ceil
+import com.example.bakalarka.R
 
 /* ================= MAIN SCREEN ================= */
 
@@ -55,6 +59,7 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    var isLoading = viewModel.isLoading
 
     Column(
         modifier = Modifier
@@ -65,6 +70,16 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
     ) {
 
         /* ================= SEARCH ================= */
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)), // Jemné stmavenie pozadia
+                contentAlignment = Alignment.Center
+            ) {
+                LoadingAnimation()
+            }
+        }
 
         if (searchbarColumn) {
 
@@ -77,7 +92,7 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                         searchbarColumn = false
                         resultsColumn = true
                     } else {
-                        Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.error_user_not_logged_in, Toast.LENGTH_SHORT).show()
                     }
                 }
             )
@@ -92,7 +107,7 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                 onClick = { training ->
 
                     if (userId == null) {
-                        Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.error_user_not_logged_in, Toast.LENGTH_SHORT).show()
                         return@SearchResults
                     }
 
@@ -100,7 +115,7 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                         val newWorkoutId = viewModel.addWorkout(userId, training.id)
 
                         if (newWorkoutId == null) {
-                            Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, R.string.error_network, Toast.LENGTH_SHORT).show()
                             return@launch
                         }
 
@@ -149,7 +164,7 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
                     if (exercise == null) {
-                        TextGenerator("Loading...", MaterialTheme.colorScheme.onBackground, "small")
+                        TextGenerator(stringResource(R.string.error_no_data), MaterialTheme.colorScheme.onBackground, "small")
                         return@Column
                     }
 
@@ -160,7 +175,7 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                     if (match != null) {
 
                         TextGenerator(
-                            "Previous workout",
+                            stringResource(R.string.button_previous_workout),
                             MaterialTheme.colorScheme.onBackground,
                             "body"
                         )
@@ -203,7 +218,7 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
 
                     } else {
                         TextGenerator(
-                            "No previous workouts",
+                            stringResource(R.string.error_no_data),
                             MaterialTheme.colorScheme.onBackground,
                             "ultrasmall"
                         )
@@ -247,15 +262,51 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                         )
                     }
 
-                    PrimaryButtonGenerator("Next Exercise",
+                    PrimaryButtonGenerator(stringResource(R.string.button_next_exercise),
                         onClick = {
                         scope.launch {
 
                             if (setDataSet.any { it.reps.isBlank() || it.weight.isBlank() }) {
-                                Toast.makeText(context, "Fill all fields", Toast.LENGTH_SHORT)
+                                Toast.makeText(context, R.string.form_error_blank, Toast.LENGTH_SHORT)
                                     .show()
                                 return@launch
                             }
+
+                            // Clean inputs (commas to dots) and parse safely
+                            val validatedData = setDataSet.map {
+                                val cleanReps = it.reps.replace(',', '.')
+                                val cleanWeight = it.weight.replace(',', '.')
+                                it.copy(reps = cleanReps, weight = cleanWeight)
+                            }
+
+                            when {
+                                validatedData.any { it.reps.toFloatOrNull() == null } -> {
+                                    Toast.makeText(context, R.string.form_error_reps_invalid, Toast.LENGTH_SHORT).show()
+                                    return@launch
+                                }
+
+                                validatedData.any {
+                                    val reps = it.reps.toFloatOrNull()
+                                    reps != null && reps > 40f
+                                } -> {
+                                    Toast.makeText(context, R.string.form_error_reps_max, Toast.LENGTH_SHORT).show()
+                                    return@launch
+                                }
+
+                                validatedData.any { it.weight.toFloatOrNull() == null } -> {
+                                    Toast.makeText(context, R.string.form_error_weight_invalid , Toast.LENGTH_SHORT).show()
+                                    return@launch
+                                }
+
+                                validatedData.any {
+                                    val weight = it.weight.toFloatOrNull()
+                                    weight != null && weight > 1100f
+                                } -> {
+                                    Toast.makeText(context, R.string.form_error_weight_max, Toast.LENGTH_SHORT).show()
+                                    return@launch
+                                }
+                            }
+
 
                             if (userId != null && workoutId != null) {
 
@@ -263,14 +314,14 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                                     userId,
                                     workoutId!!,
                                     exercise!!.id,
-                                    setDataSet.toList(),
+                                    validatedData,
                                     exercise.sets_count
                                 )
 
                                 if (currentExerciseIndex < listExercises.size - 1) {
                                     currentExerciseIndex++
                                 } else {
-                                    Toast.makeText(context, "Finished!", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, R.string.training_screen_popup_finished, Toast.LENGTH_LONG).show()
                                     exercisesColumn = false
                                     searchbarColumn = true
                                 }
@@ -278,8 +329,9 @@ fun TrainingScreen(viewModel: AppViewModel = viewModel()) {
                         }
                     })
 
-                    PrimaryButtonGenerator("Back",
+                    PrimaryButtonGenerator(stringResource(R.string.button_back),
                         onClick = {
+
                         scope.launch {
                             workoutId?.let { viewModel.deleteWorkout(it) }
                             workoutId = null
@@ -306,18 +358,18 @@ fun SearchCulumn(
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-        TextGenerator("Search training", MaterialTheme.colorScheme.onBackground, "subtitle")
+        TextGenerator(stringResource(R.string.training_screen_search), MaterialTheme.colorScheme.onBackground, "subtitle")
 
         OutlinedTextFieldGenerator(
             searchInput,
             onSearchInputChanged,
-            "Search",
+            stringResource(R.string.outlined_text_field_label_search),
             false,
             KeyboardType.Text,
             Icons.Default.Search
         )
 
-        PrimaryButtonGenerator("Search", onClick = onSearch)
+        PrimaryButtonGenerator(stringResource(R.string.button_search), onClick = onSearch)
     }
 }
 
@@ -329,7 +381,7 @@ fun SearchResults(
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-        TextGenerator("Pick training", MaterialTheme.colorScheme.onBackground, "subtitle")
+        TextGenerator(stringResource(R.string.training_screen_pick_training), MaterialTheme.colorScheme.onBackground, "subtitle")
 
         listTrainings.forEach {
             PrimaryButtonGenerator(
@@ -338,7 +390,7 @@ fun SearchResults(
             )
         }
 
-        PrimaryButtonGenerator("Back", onClick = onBack)
+        PrimaryButtonGenerator(stringResource(R.string.button_back), onClick = onBack)
     }
 }
 

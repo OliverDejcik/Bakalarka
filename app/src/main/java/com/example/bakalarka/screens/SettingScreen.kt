@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -29,6 +30,7 @@ import com.example.bakalarka.other_classes.ElementSizeProvider.getSizeForElement
 import com.example.bakalarka.supabase.CurrentUserHolder
 import com.example.bakalarka.supabase.updateTrainingName
 import kotlinx.coroutines.launch
+import com.example.bakalarka.R
 
 @Composable
 fun SettingScreen(viewModel: AppViewModel = viewModel()) {
@@ -125,7 +127,7 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                                 isTrainingSelected = false
                             }
 
-                            Toast.makeText(context, "Training updated", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, R.string.settings_screen_training_updated, Toast.LENGTH_SHORT).show()
                         },
                         onDelete = {
                             selectedTrainingId = training.id
@@ -158,7 +160,7 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
 
                         val reps = editedReps.toIntOrNull()
                         if (reps == null) {
-                            Toast.makeText(context, "Sets must be a number", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, R.string.form_error_sets_invalid, Toast.LENGTH_SHORT).show()
                             return@ExerciseRowStyled
                         }
 
@@ -169,7 +171,7 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                             selectedTrainingId
                         )
 
-                        Toast.makeText(context, "Exercise updated", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.settings_screen_exercise_updated, Toast.LENGTH_SHORT).show()
                     },
                     onDelete = {
                         viewModel.deleteExercise(
@@ -178,14 +180,14 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                             exercieseNum = exercise.order_index
                         )
 
-                        Toast.makeText(context, "Exercise deleted", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.settings_screen_exercise_deleted, Toast.LENGTH_SHORT).show()
                     }
                 )
 
             }
 
             Row {
-                SecondaryButtonGenerator("Add exercise", onClick = {
+                SecondaryButtonGenerator(stringResource(R.string.button_add_exercise), onClick = {
                     addExercise = true
                 })
             }
@@ -219,7 +221,7 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                 )
             }
 
-            PrimaryButtonGenerator("Back", onClick = {
+            PrimaryButtonGenerator(stringResource(R.string.button_back), onClick = {
                 isTrainingSelected = false
             })
         }
@@ -228,8 +230,8 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Are you sure?") },
-            text = { Text("Do you really want to delete this item?") },
+            title = { Text(stringResource(R.string.settings_screen_dialog_title)) },
+            text = { Text(stringResource(R.string.settings_screen_dialog_text)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteTrainingById(selectedTrainingId)
@@ -238,12 +240,12 @@ fun SettingScreen(viewModel: AppViewModel = viewModel()) {
                     isTrainingSelected = false
                     viewModel.loadTrainingsByUserId(userId!!)
                 }) {
-                    Text("Yes")
+                    Text(stringResource(R.string.settings_screen_dialog_yes))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("No")
+                    Text(stringResource(R.string.settings_screen_dialog_no))
                 }
             }
         )
@@ -257,7 +259,7 @@ fun TrainingHeader(){
             .fillMaxWidth()
             .border(1.dp, MaterialTheme.colorScheme.onBackground)
     ) {
-        HeaderCell("Training name", 1f)
+        HeaderCell(stringResource(R.string.settings_screen_training_name), 1f)
         Spacer(modifier = Modifier.weight(1f))
     }
 }
@@ -279,7 +281,7 @@ fun TrainingDefaultRowStyled(
         InputCell(training, onValueChange, 1f)
 
         ActionButton(
-            text = "Edit",
+            text = stringResource(R.string.button_edit),
             modifier = Modifier.weight(1f),
             onClick = onEdit
         )
@@ -325,8 +327,8 @@ fun ExerciseHeader() {
             .fillMaxWidth()
             .border(1.dp, MaterialTheme.colorScheme.onBackground)
     ) {
-        HeaderCell("Exercise", 1.5f)
-        HeaderCell("Sets", 0.5f)
+        HeaderCell(stringResource(R.string.settings_screen_exercise_name), 1.5f)
+        HeaderCell(stringResource(R.string.settings_screen_sets), 0.5f)
         Spacer(modifier = Modifier.weight(2f))
     }
 }
@@ -354,13 +356,13 @@ fun ExerciseRowStyled(
         InputCell(reps, onRepsChange, weight = 0.5f,KeyboardType.Number)
 
         ActionButton(
-            text = "Update",
+            text = stringResource(R.string.button_update),
             modifier = Modifier.weight(1f),
             onClick = onUpdate
         )
 
         ActionButton(
-            text = "Delete",
+            text = stringResource(R.string.button_delete),
             modifier = Modifier.weight(1f),
             onClick = onDelete,
             danger = true
@@ -408,7 +410,7 @@ fun AddExerciseCard(
     ) {
 
         Text(
-            text = "Add exercise",
+            text = stringResource(R.string.settings_screen_add_exercise),
             fontSize = 18.sp,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(bottom = 12.dp)
@@ -417,7 +419,7 @@ fun AddExerciseCard(
         OutlinedTextFieldGenerator(
             value = newExerciseName,
             onValueChange = onExerciseNameChange,
-            label = "Exercise name",
+            label = stringResource(R.string.outlined_text_field_label_exercise_name),
             false
         )
 
@@ -426,7 +428,7 @@ fun AddExerciseCard(
         OutlinedTextFieldGenerator(
             value = newReps,
             onValueChange = onRepsChange,
-            label = "Sets",
+            label = stringResource(R.string.outlined_text_field_label_sets),
             false,
             keyboardType = KeyboardType.Number
         )
@@ -434,7 +436,7 @@ fun AddExerciseCard(
         Spacer(modifier = Modifier.height(12.dp))
 
         PrimaryButtonGenerator(
-            text = "Add exercise",
+            text = stringResource(R.string.button_add_exercise),
             onClick = onAddExercse
         )
     }

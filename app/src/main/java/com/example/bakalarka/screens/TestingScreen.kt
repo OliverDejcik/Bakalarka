@@ -10,7 +10,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -52,7 +54,34 @@ fun calendarBuilder(viewModel: AppViewModel) { // Pridaný parameter
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TextGenerator("Calendar", MaterialTheme.colorScheme.onBackground, "subtitle")
+        Row(){
+            Box(modifier = Modifier.weight(1f)){}
+
+            Box(modifier = Modifier.weight(10f),
+                contentAlignment = Alignment.Center){
+                TextGenerator("Calendar", MaterialTheme.colorScheme.onBackground, "subtitle")
+
+            }
+
+            Box(modifier = Modifier.weight(1f)){
+                IconButton({
+
+                }
+                ) {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = "",
+                        tint = MaterialTheme.colorScheme.onBackground
+
+
+                    )
+                }
+
+            }
+
+
+        }
+
         LazyVerticalGrid(
             columns = GridCells.Fixed(7),
             modifier = Modifier.fillMaxWidth()

@@ -1,0 +1,34 @@
+ANALÝZA PROJEKTU BAKALARKA - CHYBY, FUNKCIE A ZLEPŠENIA
+
+Tento dokument obsahuje prehľad zistených nedostatkov, návrhy na nové funkcie a odporúčania pre zlepšenie používateľského zážitku (UI/UX).
+
+1. ODHALENÉ CHYBY A TECHNICKÉ NEDOSTATKY
+----------------------------------------
+*   Error Handling (Spracovanie chýb): Väčšina chýb pri komunikácii so Supabase sa len vypisuje do konzoly (println). Ak zlyhá sieť, používateľ nedostane žiadnu informáciu a aplikácia môže zostať v "zaseknutom" stave.
+*   Session Management: V aplikácii chýba automatické prihlásenie po reštarte. Používateľ sa musí prihlásiť znova pri každom otvorení aplikácie. Odporúča sa implementovať ukladanie "Session" (napr. cez DataStore alebo SharedPreferences).*
+*   Hardkódované texty: Takmer všetky texty sú priamo v kóde. To sťažuje budúci preklad aplikácie a údržbu. Mali by byť v 'res/values/strings.xml'.
+*   Duplicita kódu: Funkcie na generovanie UI prvkov sú v 'ElementsGenerator.kt', čo je super, ale v obrazovkách sa stále nachádza veľa manuálneho nastavovania Paddingov a Arrangementov, ktoré by sa dali zjednotiť.
+
+2. CHÝBAJÚCE DÔLEŽITÉ FUNKCIE (Must-Have)
+-----------------------------------------
+*   Offline Podpora (Room): Ak používateľ stratí signál v posilňovni, aplikácia prestane fungovať. Integrácia Room databázy by umožnila cvičiť offline a synchronizovať dáta neskôr.
+*   Zmazanie účtu: Podľa pravidiel Google Play by aplikácie s registráciou mali umožniť používateľovi zmazať svoj účet.
+
+3. NÁVRHY NA DRUHORADÉ FUNKCIE (Nice-to-Have)
+---------------------------------------------
+*   Časovač odpočinku (Rest Timer): Po zapísaní série by sa mal automaticky spustiť odpočet (napr. 60-90s) s jemným pípnutím na konci.
+*   Databáza cvikov: Namiesto manuálneho písania názvov by si používateľ vyberal zo zoznamu (napr. Benchpress, Squat) s možnosťou vidieť krátky návod alebo obrázok.
+*   Osobné rekordy (PRs): Špeciálna sekcia, ktorá zvýrazní tvoje historické maximá na konkrétne cviky.
+*   Kalkulačka kotúčov: Funkcia, ktorá ti vypočíta, koľko 20kg/10kg/5kg kotúčov máš naložiť na tyč pre cieľovú váhu.
+*   Export dát: Možnosť stiahnuť si históriu tréningov vo formáte PDF alebo CSV (napr. pre zaslanie trénerovi).
+
+4. UI A UX ZLEPŠENIA (Používateľská skúsenosť)
+----------------------------------------------
+*   Vizuálna spätná väzba: Pridali sme isLoading, ale bolo by fajn pridať aj "Success" animácie (napr. zelená fajka po úspešnom uložení workoutu).
+*   Empty States: Ak používateľ nemá žiadne tréningy, obrazovka Statistics alebo Training by nemala byť prázdna, ale mala by obsahovať text: "Zatiaľ tu nič nie je. Vytvor si svoj prvý tréning!"
+*   Dark/Light Mode optimalizácia: Skontrolovať kontrast farieb v Dark mode, najmä pri grafoch v Statistics.
+*   Haptická odozva: Pridanie jemnej vibrácie pri stlačení tlačidla uloženia série zvýši pocit "fyzickej" interakcie s aplikáciou.
+*   Swipe-to-Dismiss: Možnosť zmazať cvik v nastaveniach jednoduchým potiahnutím prsta do strany.
+
+ZÁVER:
+Projekt má veľmi pevné základy (Compose, Supabase, MVVM). Najväčšou prioritou by teraz mala byť stabilita (Error handling) a UX (Session management a offline podpora).

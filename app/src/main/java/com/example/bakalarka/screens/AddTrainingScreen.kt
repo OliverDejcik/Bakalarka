@@ -19,11 +19,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bakalarka.R
+import com.example.bakalarka.animations.LoadingAnimation
 import com.example.bakalarka.other_classes.AppViewModel
 import com.example.bakalarka.other_classes.ElementSizeProvider
 import com.example.bakalarka.other_classes.OutlinedTextFieldGenerator
@@ -31,7 +34,6 @@ import com.example.bakalarka.other_classes.PrimaryButtonGenerator
 import com.example.bakalarka.other_classes.SecondaryButtonGenerator
 import com.example.bakalarka.other_classes.TextGenerator
 import com.example.bakalarka.supabase.CurrentUserHolder
-import com.example.bakalarka.ui.theme.BakalarkaTheme
 import kotlinx.coroutines.launch
 
 @SuppressLint("ViewModelConstructorInComposable")
@@ -50,6 +52,7 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
     var isExerciseFormVisible by remember { mutableStateOf(false) }
 
     var createdTrainingId by remember { mutableStateOf<Int?>(null) }
+    var isLoading = viewModel.isLoading
 
     // --- CONTEXT ---
     val scope = rememberCoroutineScope()
@@ -64,6 +67,17 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
         verticalArrangement = Arrangement.Center
     ) {
 
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)), // Jemné stmavenie pozadia
+                contentAlignment = Alignment.Center
+            ) {
+                LoadingAnimation()
+            }
+        }
+
         /* ===========================
            CREATE TRAINING FORM
         ============================ */
@@ -76,7 +90,7 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
             ) {
 
                 TextGenerator(
-                    "Create new training",
+                    stringResource(R.string.add_training_screen_title),
                     MaterialTheme.colorScheme.onBackground,
                     "title"
                 )
@@ -84,38 +98,65 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
                 OutlinedTextFieldGenerator(
                     trainingName,
                     { trainingName = it },
-                    "Training Name"
+                    stringResource(R.string.outlined_text_field_label_training_name)
                 )
 
                 OutlinedTextFieldGenerator(
                     trainingNumber,
                     { trainingNumber = it },
-                    "Number of exercises",
+                    stringResource(R.string.outlined_text_field_label_number_of_exercises),
                     false,
                     KeyboardType.Number
                 )
 
                 PrimaryButtonGenerator(
-                    "Construct training",
+                    stringResource(R.string.button_create_training),
                     onClick = {
                         val number = trainingNumber.toIntOrNull()
 
-                        if (trainingName.isBlank() || number == null || number <= 0) {
-                            Toast.makeText(
-                                context,
-                                "Name and a valid number of exercises are required",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            return@PrimaryButtonGenerator
-                        }
+                        when {
+                            trainingName.isBlank() -> {
+                                Toast.makeText(
+                                    context,
+                                    R.string.form_error_training_name_blank,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@PrimaryButtonGenerator
+                            }
 
-                        if (userId == null) {
-                            Toast.makeText(
-                                context,
-                                "Error: User not logged in.",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            return@PrimaryButtonGenerator
+                            number == null -> {
+                                Toast.makeText(
+                                    context,
+                                    R.string.form_error_number_of_exercises_blank,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@PrimaryButtonGenerator
+                            }
+
+                            number <= 0 -> {
+                                Toast.makeText(
+                                    context,
+                                    R.string.form_error_number_of_exercises_invalid,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@PrimaryButtonGenerator
+                            }
+                            number > 10 -> {
+                                Toast.makeText(
+                                    context,
+                                    R.string.form_error_number_of_exercises_max,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@PrimaryButtonGenerator
+                            }
+                            userId == null -> {
+                                Toast.makeText(
+                                    context,
+                                    R.string.error_user_not_logged_in,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@PrimaryButtonGenerator
+                            }
                         }
 
                         scope.launch {
@@ -133,13 +174,13 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
 
                                 Toast.makeText(
                                     context,
-                                    "Training created. Now add exercises.",
+                                    R.string.add_traning_screen_popup_training_completed,
                                     Toast.LENGTH_SHORT
                                 ).show()
                             } else {
                                 Toast.makeText(
                                     context,
-                                    "Failed to create training.",
+                                    R.string.add_traning_screen_popup_training_failed,
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
@@ -157,9 +198,9 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
             val totalExercises = trainingNumber.toIntOrNull() ?: 0
             val buttonText =
                 if (currentExerciseIndex == totalExercises)
-                    "Finish Training"
+                    stringResource(R.string.button_finish_training)
                 else
-                    "Add Exercise"
+                    stringResource(R.string.button_add_exercise)
 
             Column(
                 modifier = Modifier
@@ -183,7 +224,7 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
                 OutlinedTextFieldGenerator(
                     sets,
                     { sets = it },
-                    "Number of sets",
+                    stringResource(R.string.outlined_text_field_label_number_of_exercises),
                     false,
                     KeyboardType.Number
                 )
@@ -191,13 +232,24 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
                 PrimaryButtonGenerator(
                     buttonText,
                     onClick = {
-                        if (exercise.isBlank() || sets.isBlank()) {
-                            Toast.makeText(
-                                context,
-                                "Name and number of sets are required",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            return@PrimaryButtonGenerator
+                        when {
+                            exercise.isBlank() -> {
+                                Toast.makeText(
+                                    context,
+                                    R.string.form_error_exercise_name_blank,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@PrimaryButtonGenerator
+                            }
+
+                            sets.isBlank() -> {
+                                Toast.makeText(
+                                    context,
+                                    R.string.form_error_number_of_sets_blank,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@PrimaryButtonGenerator
+                            }
                         }
 
                         viewModel.addExercise(
@@ -211,7 +263,7 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
                         if (currentExerciseIndex == totalExercises) {
                             Toast.makeText(
                                 context,
-                                "Training successfully created!",
+                                R.string.add_traning_screen_popup_training_completed,
                                 Toast.LENGTH_LONG
                             ).show()
 
@@ -248,13 +300,11 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(modifier = Modifier.weight(0.7f))
-            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                TextGenerator("Need help?", MaterialTheme.colorScheme.onBackground, "small")
-            }
+            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {}
             Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
 
                 SecondaryButtonGenerator(
-                    text = "Back",
+                    text = stringResource(R.string.button_back),
                     onClick = {
                         scope.launch {
 
@@ -274,3 +324,5 @@ fun AddTrainingScreen(viewModel: AppViewModel = viewModel()) {
         }
     }
 }
+
+

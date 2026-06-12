@@ -24,6 +24,7 @@ import androidx.navigation.compose.*
 import com.example.bakalarka.other_classes.AppViewModel
 import com.example.bakalarka.other_classes.Screens
 import com.example.bakalarka.screens.*
+import com.example.bakalarka.supabase.CurrentUserHolder
 import com.example.bakalarka.ui.theme.BakalarkaTheme
 
 class MainActivity : ComponentActivity() {
@@ -77,7 +78,7 @@ fun Bakalarka(
         topBar = {
             if (showTopBar) {
                 TopAppBar(
-                    title = { Text("Moja appka") },
+                    title = { Text(CurrentUserHolder.getUsername().toString())},
                     navigationIcon = {
                         IconButton(
                             onClick = {
@@ -171,7 +172,7 @@ fun Bakalarka(
                             contentDescription = "Statistics"
                         )
                     }
-                    IconButton(
+                   /* IconButton(
                         modifier = Modifier.weight(0.5f),
                         onClick = {
                             navController.navigate(Screens.Testing.route) {
@@ -180,13 +181,12 @@ fun Bakalarka(
                         }
                     ) {
                         Icon(Icons.Default.Bookmark, contentDescription = "Add")
-                    }
+                    }*/
                 }
             }
         }
     ) { innerPadding ->
 
-        // ⭐ JEDINÝ RIADOK, KTORÝ RIEŠI CELÝ PROBLÉM ⭐
         NavGraph(
             navController = navController,
             viewModel = viewModel,
@@ -225,7 +225,7 @@ fun NavGraph(
             StatisticsScreen(viewModel)
         }
         composable(Screens.Profile.route) {
-            ProfileScreen(viewModel)
+            ProfileScreen(navController, viewModel)
         }
         composable(Screens.Settings.route) {
             SettingScreen(viewModel)

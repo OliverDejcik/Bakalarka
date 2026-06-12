@@ -44,22 +44,53 @@ import java.time.format.DateTimeFormatter
 
 
 @Composable
-fun PrimaryButtonGenerator(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Button(onClick = {onClick()},modifier = modifier,colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary), shape = RoundedCornerShape(35)){
+fun PrimaryButtonGenerator(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = {onClick()},
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary),
+        shape = RoundedCornerShape(35)
+    ){
         TextGenerator(text, MaterialTheme.colorScheme.onTertiary, "button",false)
     }
 }
 
 @Composable
-fun SecondaryButtonGenerator(text: String,   onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Button(onClick = {onClick()},modifier = modifier,colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary), shape = RoundedCornerShape(35)){
+fun SecondaryButtonGenerator(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = {onClick()},
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary),
+        shape = RoundedCornerShape(35)
+    ){
         TextGenerator(text, MaterialTheme.colorScheme.onSecondary, "label",false)
     }
 }
 
 @Composable
-fun SettingsButtonGenerator(text: String,   onClick: () -> Unit, modifier: Modifier = Modifier.fillMaxWidth().border(width = 1.dp, color = MaterialTheme.colorScheme.onSecondary)) {
-    Button(onClick = {onClick()},modifier = modifier,colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary), contentPadding = PaddingValues(), shape = RoundedCornerShape(0)){
+fun SettingsButtonGenerator(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier.fillMaxWidth().border(
+        width = 1.dp,
+        color = MaterialTheme.colorScheme.onSecondary
+    )
+) {
+    Button(
+        onClick = {onClick()},
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary),
+        contentPadding = PaddingValues(),
+        shape = RoundedCornerShape(0)
+    ) {
         TextGenerator(text, MaterialTheme.colorScheme.onSecondary, "ultrasmall",false)
     }
 }
@@ -322,11 +353,6 @@ fun LineChartView(
                 chart.invalidate()
             }
         )
-
-        // ===============================
-        // OVERLAY TEXT (ĽAVÝ HORNÝ ROH)
-        // ===============================
-
 
     }
 }
