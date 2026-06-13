@@ -1,0 +1,351 @@
+-- =====================================================
+-- USERS
+-- =====================================================
+
+CREATE TABLE users (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    username TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- =====================================================
+-- MUSCLE GROUPS
+-- =====================================================
+
+CREATE TABLE muscle_groups (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    name TEXT NOT NULL UNIQUE
+);
+
+-- =====================================================
+-- EXERCISE LIBRARY
+-- =====================================================
+
+CREATE TABLE exercises (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    name TEXT NOT NULL,
+
+    description TEXT,
+
+    equipment TEXT,
+
+    video_url TEXT,
+
+    created_by_user_id INTEGER,
+
+    is_system BOOLEAN NOT NULL DEFAULT FALSE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    CONSTRAINT fk_exercise_creator
+        FOREIGN KEY (created_by_user_id)
+        REFERENCES users(id)
+        ON DELETE SET NULL
+);
+
+CREATE INDEX idx_exercises_creator
+ON exercises(created_by_user_id);
+
+CREATE INDEX idx_exercises_name
+ON exercises(name);
+
+-- =====================================================
+-- EXERCISE ↔ MUSCLE GROUPS (M:N)
+-- =====================================================
+
+CREATE TABLE exercise_muscle_groups (
+    exercise_id INTEGER NOT NULL,
+
+    muscle_group_id INTEGER NOT NULL,
+
+    is_primary BOOLEAN NOT NULL DEFAULT FALSE,
+
+    PRIMARY KEY (
+        exercise_id,
+        muscle_group_id
+    ),
+
+    CONSTRAINT fk_emg_exercise
+        FOREIGN KEY (exercise_id)
+        REFERENCES exercises(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_emg_muscle
+        FOREIGN KEY (muscle_group_id)
+        REFERENCES muscle_groups(id)
+        ON DELETE CASCADE
+);
+
+CREATE INDEX idx_emg_muscle_group
+ON exercise_muscle_groups(muscle_group_id);
+
+-- =====================================================
+-- TRAINING TEMPLATES
+-- =====================================================
+
+CREATE TABLE training_templates (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    name TEXT NOT NULL,
+
+    description TEXT,
+
+    created_by_user_id INTEGER,
+
+    is_system BOOLEAN NOT NULL DEFAULT FALSE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    CONSTRAINT fk_template_creator
+        FOREIGN KEY (created_by_user_id)
+        REFERENCES users(id)
+        ON DELETE SET NULL
+);
+
+CREATE INDEX idx_templates_creator
+ON training_templates(created_by_user_id);
+
+-- =====================================================
+-- TEMPLATE EXERCISES
+-- =====================================================
+
+CREATE TABLE training_template_exercises (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    training_template_id INTEGER NOT NULL,
+
+    exercise_id INTEGER NOT NULL,
+
+    order_index INTEGER NOT NULL,
+
+    target_sets INTEGER NOT NULL,
+
+    target_reps INTEGER,
+
+    rest_seconds INTEGER,
+
+    CONSTRAINT fk_tte_template
+        FOREIGN KEY (training_template_id)
+        REFERENCES training_templates(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_tte_exercise
+        FOREIGN KEY (exercise_id)
+        REFERENCES exercises(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT uq_template_order
+        UNIQUE (
+            training_template_id,
+            order_index
+        ),
+
+    CONSTRAINT chk_template_order
+        CHECK (order_index > 0),
+
+    CONSTRAINT chk_target_sets
+        CHECK (target_sets > 0),
+
+    CONSTRAINT chk_target_reps
+        CHECK (
+            target_reps IS NULL
+            OR target_reps > 0
+        ),
+
+    CONSTRAINT chk_rest_seconds
+        CHECK (
+            rest_seconds IS NULL
+            OR rest_seconds >= 0
+        )
+);
+
+CREATE INDEX idx_tte_template
+ON training_template_exercises(training_template_id);
+
+CREATE INDEX idx_tte_exercise
+ON training_template_exercises(exercise_id);
+
+-- =====================================================
+-- WORKOUTS
+-- =====================================================
+
+CREATE TABLE workouts (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    user_id INTEGER NOT NULL,
+
+    training_template_id INTEGER,
+
+    started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    finished_at TIMESTAMPTZ,
+
+    notes TEXT,
+
+    CONSTRAINT fk_workout_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_workout_template
+        FOREIGN KEY (training_template_id)
+        REFERENCES training_templates(id)
+        ON DELETE SET NULL
+);
+
+CREATE INDEX idx_workouts_user
+ON workouts(user_id);
+
+CREATE INDEX idx_workouts_started
+ON workouts(started_at);
+
+-- =====================================================
+-- WORKOUT EXERCISES
+-- =====================================================
+
+CREATE TABLE workout_exercises (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    workout_id INTEGER NOT NULL,
+
+    exercise_id INTEGER NOT NULL,
+
+    order_index INTEGER NOT NULL,
+
+    planned_sets INTEGER,
+
+    completed BOOLEAN NOT NULL DEFAULT FALSE,
+
+    is_skipped BOOLEAN NOT NULL DEFAULT FALSE,
+
+    notes TEXT,
+
+    CONSTRAINT fk_we_workout
+        FOREIGN KEY (workout_id)
+        REFERENCES workouts(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_we_exercise
+        FOREIGN KEY (exercise_id)
+        REFERENCES exercises(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT uq_workout_order
+        UNIQUE (
+            workout_id,
+            order_index
+        ),
+
+    CONSTRAINT chk_we_order
+        CHECK (order_index > 0),
+
+    CONSTRAINT chk_planned_sets
+        CHECK (
+            planned_sets IS NULL
+            OR planned_sets > 0
+        )
+);
+
+CREATE INDEX idx_we_workout
+ON workout_exercises(workout_id);
+
+CREATE INDEX idx_we_exercise
+ON workout_exercises(exercise_id);
+
+-- =====================================================
+-- WORKOUT SETS
+-- =====================================================
+
+CREATE TABLE workout_sets (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    workout_exercise_id INTEGER NOT NULL,
+
+    set_number INTEGER NOT NULL,
+
+    reps INTEGER,
+
+    weight NUMERIC(6,2),
+
+    rir SMALLINT,
+
+    duration_seconds INTEGER,
+
+    completed_at TIMESTAMPTZ,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    CONSTRAINT fk_ws_workout_exercise
+        FOREIGN KEY (workout_exercise_id)
+        REFERENCES workout_exercises(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT uq_set_number
+        UNIQUE (
+            workout_exercise_id,
+            set_number
+        ),
+
+    CONSTRAINT chk_set_number
+        CHECK (set_number > 0),
+
+    CONSTRAINT chk_reps
+        CHECK (
+            reps IS NULL
+            OR reps >= 0
+        ),
+
+    CONSTRAINT chk_weight
+        CHECK (
+            weight IS NULL
+            OR weight >= 0
+        ),
+
+    CONSTRAINT chk_rir
+        CHECK (
+            rir IS NULL
+            OR (rir >= 0 AND rir <= 10)
+        ),
+
+    CONSTRAINT chk_duration
+        CHECK (
+            duration_seconds IS NULL
+            OR duration_seconds >= 0
+        )
+);
+
+CREATE INDEX idx_ws_workout_exercise
+ON workout_sets(workout_exercise_id);
+
+-- =====================================================
+-- DEFAULT MUSCLE GROUPS
+-- =====================================================
+
+INSERT INTO muscle_groups (name)
+VALUES
+('Chest'),
+('Upper Chest'),
+('Back'),
+('Lats'),
+('Traps'),
+('Shoulders'),
+('Front Delts'),
+('Side Delts'),
+('Rear Delts'),
+('Biceps'),
+('Triceps'),
+('Forearms'),
+('Abs'),
+('Obliques'),
+('Lower Back'),
+('Glutes'),
+('Quads'),
+('Hamstrings'),
+('Calves'),
+('Full Body');

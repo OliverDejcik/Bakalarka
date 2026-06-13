@@ -1,0 +1,55 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.users (
+  id integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  username text NOT NULL UNIQUE,
+  password_hash text NOT NULL,
+  email text NOT NULL UNIQUE,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT users_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.trainings (
+  id integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  user_id integer NOT NULL,
+  name text NOT NULL,
+  number_of_exercises integer NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT trainings_pkey PRIMARY KEY (id),
+  CONSTRAINT fk_trainings_user FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.exercises (
+  id integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  training_id integer NOT NULL,
+  user_id integer NOT NULL,
+  name text NOT NULL,
+  sets_count integer NOT NULL,
+  order_index integer NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT exercises_pkey PRIMARY KEY (id),
+  CONSTRAINT fk_exercises_training FOREIGN KEY (training_id) REFERENCES public.trainings(id),
+  CONSTRAINT fk_exercises_user FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.workouts (
+  id integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  user_id integer NOT NULL,
+  training_id integer NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT workouts_pkey PRIMARY KEY (id),
+  CONSTRAINT fk_workouts_user FOREIGN KEY (user_id) REFERENCES public.users(id),
+  CONSTRAINT fk_workouts_training FOREIGN KEY (training_id) REFERENCES public.trainings(id)
+);
+CREATE TABLE public.workout_exercises (
+  id integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+  workout_id integer NOT NULL,
+  exercise_id integer NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  set_number bigint,
+  reps bigint,
+  weight real,
+  user_id integer,
+  CONSTRAINT workout_exercises_pkey PRIMARY KEY (id),
+  CONSTRAINT fk_workout_exercises_workout FOREIGN KEY (workout_id) REFERENCES public.workouts(id),
+  CONSTRAINT fk_workout_exercises_exercise FOREIGN KEY (exercise_id) REFERENCES public.exercises(id),
+  CONSTRAINT workout_exercises_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
